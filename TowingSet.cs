@@ -32,12 +32,12 @@ namespace TowableBoats
         private void FixedUpdate()
         {
             //GPButtonDockMooring[] bollards = gameObject.GetComponentsInChildren<GPButtonDockMooring>();
-            if (bollards != null)
+            if (bollards != null && Plugin.drag.Value == true)
             {
                 for (int i = 0; i < bollards.Length; i++)
                 {
                     //Vector3 force = bollards[i].transform.GetComponentInChildren<SpringJoint>().currentForce;
-                    Vector3 force = new Vector3(0f,0f,0f);
+                    Vector3 force = bollards[i].transform.position;
                     if (bollards[i].transform.GetComponentInChildren<PickupableBoatMooringRope>())
                     {
                         force = bollards[i].transform.GetComponentInChildren<SpringJoint>().currentForce;
@@ -45,7 +45,7 @@ namespace TowableBoats
                         {
                             force /= 10;
                         }
-                        base.gameObject.GetComponent<Rigidbody>().AddForceAtPosition(force / 4f, bollards[i].transform.position, ForceMode.Force);
+                        base.gameObject.GetComponent<Rigidbody>().AddForceAtPosition(force / 3f, bollards[i].transform.position, ForceMode.Force);
                     }
                 }
             }
@@ -65,19 +65,15 @@ namespace TowableBoats
             //GPButtonDockMooring[] bollards = gameObject.GetComponentsInChildren<GPButtonDockMooring>();
             if (bollards != null)
             {
-                if (bollards.Length > 0)
+                for (int i = 0; i < bollards.Length; i++)
                 {
-                    for (int i = 0; i < bollards.Length; i++)
+                    if (bollards[i].transform.GetComponentInChildren<PickupableBoatMooringRope>() != null)
                     {
-                        if (bollards[i].transform.GetComponentInChildren<PickupableBoatMooringRope>() != null)
-                        {
-                            flag = true;
-                            towedBoats.Add(bollards[i].transform.GetComponentInChildren<PickupableBoatMooringRope>().GetBoatRigidbody());
-                        }
+                        flag = true;
+                        towedBoats.Add(bollards[i].transform.GetComponentInChildren<PickupableBoatMooringRope>().GetBoatRigidbody());
                     }
                 }
             }
-
 
             towing = flag;
             return towedBoats;

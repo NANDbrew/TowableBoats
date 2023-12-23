@@ -16,6 +16,8 @@ namespace TowableBoats
 
         //--settings--
         internal static ConfigEntry<int> performanceMode;
+        internal static ConfigEntry<bool> multiParent;
+        internal static ConfigEntry<bool> drag;
 
         internal static ManualLogSource logSource;
 
@@ -24,7 +26,9 @@ namespace TowableBoats
             logSource = Logger;
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), PLUGIN_ID);
 
-            performanceMode = Config.Bind("Settings", "Performance Mode", 2, new ConfigDescription("", new AcceptableValueRange<int>(0, 2)));
+            performanceMode = Config.Bind("Settings", "Performance mode", 1, new ConfigDescription("How many boats down the chain from the current boat should get full physics", new AcceptableValueRange<int>(0, 5), new ConfigurationManagerAttributes { Order = 1 }));
+            multiParent = Config.Bind("Settings", "Team towing", false, new ConfigDescription("Allow a boat to BE TOWED BY multiple boats at once (buggy)", null, new ConfigurationManagerAttributes { IsAdvanced = true }));
+            drag = Config.Bind("Settings", "Drag", false, new ConfigDescription("Allow boats to pull on the boat towing them (buggy)", null, new ConfigurationManagerAttributes { IsAdvanced = true }));
         }
     }
 }
