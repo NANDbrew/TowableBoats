@@ -8,11 +8,12 @@ using System.Reflection;
 namespace TowableBoats
 {
     [BepInPlugin(PLUGIN_ID, PLUGIN_NAME, PLUGIN_VERSION)]
+    [BepInDependency("com.app24.sailwindmoddinghelper", "2.0.0")]
     public class Plugin : BaseUnityPlugin
     {
         public const string PLUGIN_ID = "com.nandbrew.towableboats";
         public const string PLUGIN_NAME = "Towable Boats";
-        public const string PLUGIN_VERSION = "0.1.0";
+        public const string PLUGIN_VERSION = "0.1.1";
 
         //--settings--
         internal static ConfigEntry<int> performanceMode;
