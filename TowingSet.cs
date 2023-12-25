@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using cakeslice;
 
 namespace TowableBoats
 {
@@ -14,7 +15,7 @@ namespace TowableBoats
     {
         private Transform mooringSetTransform;
         private Transform boatTransform;
-        private GPButtonDockMooring[] bollards;
+        public GPButtonDockMooring[] bollards;
         public Rigidbody towedBy;
         public List<Rigidbody> towedBoats;
         public bool towing;
@@ -28,6 +29,26 @@ namespace TowableBoats
             //Debug.Log("base parent is: " + base.transform.name);
             boatTransform = base.transform;
         }
+
+/*        private void Update()
+        {
+            if (bollards != null)
+            {
+                foreach (GPButtonDockMooring bollard in bollards)
+                {
+                    Outline[] outline = bollard.GetComponents<Outline>();
+                    foreach (Outline outline2 in outline)
+                    {
+                        if (outline2 != bollard.GetPrivateField("outline"))
+                        {
+                            Destroy(outline2);
+                        }
+                    }
+
+                }
+
+            }
+        }*/
 
         private void FixedUpdate()
         {
@@ -117,8 +138,14 @@ namespace TowableBoats
 
                 boatBollard.transform.localScale = new Vector3(boatBollard.transform.localScale.x * 0.6f, boatBollard.transform.localScale.y * 0.6f, boatBollard.transform.localScale.z * 0.6f);
                 boatBollard.tag = "Boat";
-
                 //Plugin.logSource.LogInfo($"{i}");
+                foreach (Outline outline in boatBollard.GetComponents<Outline>())
+                {
+                    if (outline != boatBollard.GetPrivateField("outline"))
+                    {
+                        Destroy(outline);
+                    }
+                }
             }
             bollards = gameObject.GetComponentsInChildren<GPButtonDockMooring>();
             //Debug.Log("added bollards");
