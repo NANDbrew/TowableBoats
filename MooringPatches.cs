@@ -60,11 +60,11 @@ namespace TowableBoats
                 {
                     if (___boatRigidbody.transform != mooring.GetComponentInParent<TowingSet>().GetBoatTransform())
                     {
-                        if (Plugin.multiParent.Value == true || !__instance.GetComponentInParent<TowingSet>().towed || mooring.gameObject.GetComponentInParent<TowingSet>().GetBoatTransform() == ___boatRigidbody.gameObject.GetComponentInParent<TowingSet>().towedBy.transform)
+                        if (Plugin.multiParent.Value == true || !__instance.GetComponentInParent<TowingSet>().GetTowedBy() || mooring.gameObject.GetComponentInParent<TowingSet>().GetBoatTransform() == ___boatRigidbody.gameObject.GetComponentInParent<TowingSet>().GetTowedBy().transform)
                         {
                             __instance.MoorTo(mooring);
-                            ___boatRigidbody.GetComponentInParent<TowingSet>().GetTowedBy();
-                            mooring.GetComponentInParent<TowingSet>().GetTowedBoat();
+                            ___boatRigidbody.GetComponentInParent<TowingSet>().UpdateTowedBy();
+                            mooring.GetComponentInParent<TowingSet>().UpdateTowedBoats();
                         }
                     }
                     return false;
@@ -91,9 +91,9 @@ namespace TowableBoats
 
                 if (__state)
                 {
-                    __state.GetTowedBoat();
+                    __state.UpdateTowedBoats();
                 }
-                ___boatRigidbody.GetComponent<TowingSet>().GetTowedBy();
+                ___boatRigidbody.GetComponent<TowingSet>().UpdateTowedBy();
             }
         }
 
@@ -104,9 +104,9 @@ namespace TowableBoats
             [HarmonyPostfix]
             public static void UnmoorAllRopesPatch(BoatMooringRopes __instance)
             {
-                if (!__instance.GetComponentInParent<TowingSet>() || __instance.GetComponentInParent<TowingSet>().bollards == null) return;
+                if (!__instance.GetComponentInParent<TowingSet>() || __instance.GetComponentInParent<TowingSet>().GetTowedBy() == null) return;
 
-                foreach (GPButtonDockMooring bollard in __instance.GetComponentInParent<TowingSet>().bollards)
+                foreach (GPButtonDockMooring bollard in __instance.GetComponentInParent<TowingSet>().GetBollards())
                 {
                     if (bollard.GetComponentInChildren<PickupableBoatMooringRope>())
                     {
