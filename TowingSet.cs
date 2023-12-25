@@ -117,6 +117,7 @@ namespace TowableBoats
                 }
             }
             towed = false;
+            towedBy = null;
             return null;
         }
 
