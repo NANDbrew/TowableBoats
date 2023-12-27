@@ -48,8 +48,6 @@ namespace TowableBoats
 
             }
         }
-
-  
         [HarmonyPatch(typeof(PickupableBoatMooringRope))]
         private static class BoatMooringRopePatches
         {
@@ -62,6 +60,7 @@ namespace TowableBoats
                     if (___boatRigidbody.transform != mooring.GetComponentInParent<TowingSet>().GetBoatTransform())
                     {
                         if (Plugin.multiParent.Value == true || !__instance.GetComponentInParent<TowingSet>().towed || mooring.gameObject.GetComponentInParent<TowingSet>().GetBoatTransform() == ___boatRigidbody.gameObject.GetComponentInParent<TowingSet>().GetTowedBy().transform)
+
                         {
                             __instance.MoorTo(mooring);
                             ___boatRigidbody.GetComponentInParent<TowingSet>().UpdateTowedBy();
@@ -108,6 +107,7 @@ namespace TowableBoats
                 if (!__instance.GetComponentInParent<TowingSet>() || __instance.GetComponentInParent<TowingSet>().bollards == null) return;
 
                 foreach (GPButtonDockMooring bollard in __instance.GetComponentInParent<TowingSet>().bollards)
+
                 {
                     if (bollard.GetComponentInChildren<PickupableBoatMooringRope>())
                     {

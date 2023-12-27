@@ -15,11 +15,11 @@ namespace TowableBoats
     {
         private Transform mooringSetTransform;
         private Transform boatTransform;
-        public GPButtonDockMooring[] bollards;
         private Rigidbody towedBy;
         private List<Rigidbody> towedBoats;
         public bool towing;
         public bool towed;
+        private GPButtonDockMooring[] bollards;
 
         public Transform GetBoatTransform() { return boatTransform; }
         public List<Rigidbody> GetTowedBoats() { return towedBoats; }
@@ -63,6 +63,7 @@ namespace TowableBoats
         {
             towedBoats = new List<Rigidbody>();
             bool flag = false;
+
             if (bollards != null)
             {
                 for (int i = 0; i < bollards.Length; i++)
@@ -73,13 +74,17 @@ namespace TowableBoats
                         flag = true;
                     }
                 }
+
             }
             towing = flag;
+
         }
 
         public void UpdateTowedBy()
         {
+
             bool flag = false;
+
             towedBy = null;
             PickupableBoatMooringRope[] ropes = gameObject.GetComponent<BoatMooringRopes>().ropes;
 
@@ -90,11 +95,13 @@ namespace TowableBoats
                     if (ropes[i].GetPrivateField<SpringJoint>("mooredToSpring").gameObject.CompareTag("Boat"))
                     {
                         towedBy = ropes[i].GetPrivateField<SpringJoint>("mooredToSpring").transform.GetComponentInParent<TowingSet>().GetBoatTransform().GetComponent<Rigidbody>();
+
                         flag = true;
                     }
                 }
             }
             towed = flag;
+
         }
 
         public void AddBollards(GameObject bollard)
@@ -116,7 +123,9 @@ namespace TowableBoats
                 boatBollard.tag = "Boat";
                 foreach (Outline outline in boatBollard.GetComponents<Outline>())
                 {
+
                     if (ReferenceEquals(outline, boatBollard.GetPrivateField("outline")))
+
                     {
                         Destroy(outline);
                     }
