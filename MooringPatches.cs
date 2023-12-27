@@ -48,7 +48,6 @@ namespace TowableBoats
 
             }
         }
-
         [HarmonyPatch(typeof(PickupableBoatMooringRope))]
         private static class BoatMooringRopePatches
         {
@@ -60,7 +59,8 @@ namespace TowableBoats
                 {
                     if (___boatRigidbody.transform != mooring.GetComponentInParent<TowingSet>().GetBoatTransform())
                     {
-                        if (Plugin.multiParent.Value == true || !__instance.GetComponentInParent<TowingSet>().GetTowedBy() || mooring.gameObject.GetComponentInParent<TowingSet>().GetBoatTransform() == ___boatRigidbody.gameObject.GetComponentInParent<TowingSet>().GetTowedBy().transform)
+                        if (Plugin.multiParent.Value == true || !__instance.GetComponentInParent<TowingSet>().towed || mooring.gameObject.GetComponentInParent<TowingSet>().GetBoatTransform() == ___boatRigidbody.gameObject.GetComponentInParent<TowingSet>().GetTowedBy().transform)
+
                         {
                             __instance.MoorTo(mooring);
                             ___boatRigidbody.GetComponentInParent<TowingSet>().UpdateTowedBy();
@@ -104,9 +104,10 @@ namespace TowableBoats
             [HarmonyPostfix]
             public static void UnmoorAllRopesPatch(BoatMooringRopes __instance)
             {
-                if (!__instance.GetComponentInParent<TowingSet>() || __instance.GetComponentInParent<TowingSet>().GetTowedBy() == null) return;
+                if (!__instance.GetComponentInParent<TowingSet>() || __instance.GetComponentInParent<TowingSet>().GetBollards() == null) return;
 
                 foreach (GPButtonDockMooring bollard in __instance.GetComponentInParent<TowingSet>().GetBollards())
+
                 {
                     if (bollard.GetComponentInChildren<PickupableBoatMooringRope>())
                     {

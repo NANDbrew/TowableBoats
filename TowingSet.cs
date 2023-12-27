@@ -15,9 +15,12 @@ namespace TowableBoats
     {
         private Transform mooringSetTransform;
         private Transform boatTransform;
-        private GPButtonDockMooring[] bollards;
         private Rigidbody towedBy;
         private List<Rigidbody> towedBoats;
+        public bool towing;
+        public bool towed;
+        private GPButtonDockMooring[] bollards;
+
         public Transform GetBoatTransform() { return boatTransform; }
         public List<Rigidbody> GetTowedBoats() { return towedBoats; }
         public Rigidbody GetTowedBy() { return towedBy; }
@@ -25,7 +28,7 @@ namespace TowableBoats
 
         private void Awake()
         {
-            
+
             mooringSetTransform = gameObject.GetComponentInChildren<MooringSet>().transform.GetChild(0);
             //Debug.Log("base parent is: " + base.transform.name);
             boatTransform = base.transform;
@@ -59,6 +62,7 @@ namespace TowableBoats
         public void UpdateTowedBoats()
         {
             towedBoats = new List<Rigidbody>();
+            bool flag = false;
 
             if (bollards != null)
             {
@@ -67,13 +71,20 @@ namespace TowableBoats
                     if (bollards[i].transform.GetComponentInChildren<PickupableBoatMooringRope>() != null)
                     {
                         towedBoats.Add(bollards[i].transform.GetComponentInChildren<PickupableBoatMooringRope>().GetBoatRigidbody());
+                        flag = true;
                     }
                 }
-            } 
+
+            }
+            towing = flag;
+
         }
 
         public void UpdateTowedBy()
         {
+
+            bool flag = false;
+
             towedBy = null;
             PickupableBoatMooringRope[] ropes = gameObject.GetComponent<BoatMooringRopes>().ropes;
 
@@ -84,9 +95,13 @@ namespace TowableBoats
                     if (ropes[i].GetPrivateField<SpringJoint>("mooredToSpring").gameObject.CompareTag("Boat"))
                     {
                         towedBy = ropes[i].GetPrivateField<SpringJoint>("mooredToSpring").transform.GetComponentInParent<TowingSet>().GetBoatTransform().GetComponent<Rigidbody>();
+
+                        flag = true;
                     }
                 }
             }
+            towed = flag;
+
         }
 
         public void AddBollards(GameObject bollard)
@@ -108,7 +123,9 @@ namespace TowableBoats
                 boatBollard.tag = "Boat";
                 foreach (Outline outline in boatBollard.GetComponents<Outline>())
                 {
-                    if (outline != boatBollard.GetPrivateField("outline"))
+
+                    if (!ReferenceEquals(outline, boatBollard.GetPrivateField("outline")))
+
                     {
                         Destroy(outline);
                     }
