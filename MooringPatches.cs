@@ -104,9 +104,9 @@ namespace TowableBoats
             [HarmonyPostfix]
             public static void UnmoorAllRopesPatch(BoatMooringRopes __instance)
             {
-                if (!__instance.GetComponentInParent<TowingSet>() || __instance.GetComponentInParent<TowingSet>().bollards == null) return;
+                if (!__instance.GetComponentInParent<TowingSet>() || __instance.GetComponentInParent<TowingSet>().GetBollards() == null) return;
 
-                foreach (GPButtonDockMooring bollard in __instance.GetComponentInParent<TowingSet>().bollards)
+                foreach (GPButtonDockMooring bollard in __instance.GetComponentInParent<TowingSet>().GetBollards())
 
                 {
                     if (bollard.GetComponentInChildren<PickupableBoatMooringRope>())

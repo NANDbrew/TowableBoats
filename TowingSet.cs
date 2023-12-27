@@ -124,7 +124,7 @@ namespace TowableBoats
                 foreach (Outline outline in boatBollard.GetComponents<Outline>())
                 {
 
-                    if (ReferenceEquals(outline, boatBollard.GetPrivateField("outline")))
+                    if (!ReferenceEquals(outline, boatBollard.GetPrivateField("outline")))
 
                     {
                         Destroy(outline);

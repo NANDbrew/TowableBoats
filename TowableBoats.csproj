@@ -88,6 +88,7 @@
     <Compile Include="ConfigurationManagerAttributes.cs" />
     <Compile Include="MooringPatches.cs" />
     <Compile Include="Plugin.cs" />
+    <Compile Include="SleepPatches.cs" />
     <Compile Include="TowingSet.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

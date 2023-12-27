@@ -22,26 +22,46 @@ namespace TowableBoats
             public static void BoatKinematicPatch(BoatHorizon __instance, ref Rigidbody ___rigidbody)
             {
 
-                if (! __instance.GetComponentInParent<TowingSet>() || !__instance.GetComponentInParent<TowingSet>().GetTowedBy()) return;
                 if (GameState.sleeping)
                 {
-                    Rigidbody towedBy = __instance.GetComponentInParent<TowingSet>().GetTowedBy();
-                    for (int i = 0; i < 5; i++)
+                    if (__instance.GetComponentInParent<TowingSet>().towed)
                     {
-                        if (towedBy.transform == GameState.currentBoat || towedBy.transform == GameState.lastBoat)
+                        Rigidbody towedBy = __instance.GetComponentInParent<TowingSet>().GetTowedBy();
+                        for (int i = 0; i < 5; i++)
                         {
-                            //Plugin.logSource.LogInfo("found Boat");
+                            if (towedBy.transform == GameState.currentBoat || towedBy.transform == GameState.lastBoat)
+                            {
+                                ___rigidbody.isKinematic = false;
+                                break;
+                            }
+                            if (towedBy.gameObject.GetComponent<TowingSet>().towed)
 
-                            ___rigidbody.isKinematic = false;
+                            {
+                                towedBy = towedBy.gameObject.GetComponent<TowingSet>().GetTowedBy();
+                                continue;
+                            }
                             break;
                         }
-                        if (towedBy.gameObject.GetComponent<TowingSet>().towed)
+                    }
 
+                    if (__instance.GetComponentInParent<TowingSet>().towing)
+                    {
+                        List<Rigidbody> towedBoats = __instance.GetComponentInParent<TowingSet>().GetTowedBoats();
+                        for (int i = 0; i < 5; i++)
                         {
-                            towedBy = towedBy.gameObject.GetComponent<TowingSet>().GetTowedBy();
-                            continue;
+                            foreach (Rigidbody body1 in towedBoats)
+                            {
+                                if (body1.transform == GameState.currentBoat || body1.transform == GameState.lastBoat)
+                                {
+                                    ___rigidbody.isKinematic = false;
+                                    return;
+                                }
+                                if (body1.gameObject.GetComponent<TowingSet>().towing)
+                                {
+                                    towedBoats = body1.gameObject.GetComponent<TowingSet>().GetTowedBoats();
+                                }
+                            }
                         }
-                        break;
                     }
                 }
             }
@@ -55,7 +75,7 @@ namespace TowableBoats
             {
                 if (__instance.GetComponentInParent<TowingSet>() == null) return;
                 // check if we're being towed
-                if (__instance.GetComponentInParent<TowingSet>().GetTowedBy() && Plugin.performanceMode.Value > 0)
+                if (__instance.GetComponentInParent<TowingSet>().towed && Plugin.performanceMode.Value > 0)
                 {
                     Rigidbody towedBy = __instance.GetComponentInParent<TowingSet>().GetTowedBy();
                     for (int i = 0; i < Plugin.performanceMode.Value; i++)
@@ -63,7 +83,7 @@ namespace TowableBoats
                         if (towedBy.transform == GameState.currentBoat || towedBy.transform == GameState.lastBoat)
                         {
                             //Plugin.logSource.LogInfo("found Boat");
-                            ___performanceModeOn = false;
+                            __instance.InvokePrivateMethod("SetPerformanceMode", false);
                             break;
                         }
                         if (towedBy.gameObject.GetComponent<TowingSet>().towed)
@@ -88,7 +108,7 @@ namespace TowableBoats
                         {
                             if (body1.transform == GameState.currentBoat || body1.transform == GameState.lastBoat)
                             {
-                                ___performanceModeOn = false;
+                                __instance.InvokePrivateMethod("SetPerformanceMode", false);
                                 return;
                             }
                             if (body1.gameObject.GetComponent<TowingSet>().towing)
