@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using cakeslice;
 
 namespace TowableBoats
 {
@@ -14,16 +15,20 @@ namespace TowableBoats
     {
         private Transform mooringSetTransform;
         private Transform boatTransform;
-        private GPButtonDockMooring[] bollards;
-        public Rigidbody towedBy;
-        public List<Rigidbody> towedBoats;
+        public GPButtonDockMooring[] bollards;
+        private Rigidbody towedBy;
+        private List<Rigidbody> towedBoats;
         public bool towing;
         public bool towed;
+
         public Transform GetBoatTransform() { return boatTransform; }
+        public List<Rigidbody> GetTowedBoats() { return towedBoats; }
+        public Rigidbody GetTowedBy() { return towedBy; }
+        public GPButtonDockMooring[] GetBollards() { return bollards; }
 
         private void Awake()
         {
-            
+
             mooringSetTransform = gameObject.GetComponentInChildren<MooringSet>().transform.GetChild(0);
             //Debug.Log("base parent is: " + base.transform.name);
             boatTransform = base.transform;
@@ -36,72 +41,64 @@ namespace TowableBoats
             {
                 for (int i = 0; i < bollards.Length; i++)
                 {
-                    //Vector3 force = bollards[i].transform.GetComponentInChildren<SpringJoint>().currentForce;
-                    Vector3 force = bollards[i].transform.position;
                     if (bollards[i].transform.GetComponentInChildren<PickupableBoatMooringRope>())
                     {
-                        force = bollards[i].transform.GetComponentInChildren<SpringJoint>().currentForce;
+                        Vector3 force = bollards[i].transform.GetComponentInChildren<SpringJoint>().currentForce;
                         if (bollards[i].transform.GetComponentInChildren<SpringJoint>().connectedBody.gameObject.GetComponent<BoatPerformanceSwitcher>().performanceModeIsOn())
                         {
                             force /= 10;
                         }
-                        base.gameObject.GetComponent<Rigidbody>().AddForceAtPosition(force / 3f, bollards[i].transform.position, ForceMode.Force);
+                        gameObject.GetComponent<Rigidbody>().AddForceAtPosition(force / 3f, bollards[i].transform.position, ForceMode.Force);
                     }
                 }
             }
-
-
             if (GameState.justStarted)
             {
-                GetTowedBoat();
-                GetTowedBy();
+                UpdateTowedBoats();
+                UpdateTowedBy();
             }
         }
 
-        public List<Rigidbody> GetTowedBoat()
+        public void UpdateTowedBoats()
         {
-            bool flag = false;
             towedBoats = new List<Rigidbody>();
-            //GPButtonDockMooring[] bollards = gameObject.GetComponentsInChildren<GPButtonDockMooring>();
+            bool flag = false;
             if (bollards != null)
             {
                 for (int i = 0; i < bollards.Length; i++)
                 {
                     if (bollards[i].transform.GetComponentInChildren<PickupableBoatMooringRope>() != null)
                     {
-                        flag = true;
                         towedBoats.Add(bollards[i].transform.GetComponentInChildren<PickupableBoatMooringRope>().GetBoatRigidbody());
+                        flag = true;
                     }
                 }
             }
-
             towing = flag;
-            return towedBoats;
         }
-        public Rigidbody GetTowedBy()
+
+        public void UpdateTowedBy()
         {
+            bool flag = false;
+            towedBy = null;
             PickupableBoatMooringRope[] ropes = gameObject.GetComponent<BoatMooringRopes>().ropes;
-            //GPButtonDockMooring[] bollards = gameObject.GetComponentsInChildren<GPButtonDockMooring>();
+
             for (int i = 0; i < ropes.Length; i++)
             {
                 if (ropes[i].IsMoored())
                 {
                     if (ropes[i].GetPrivateField<SpringJoint>("mooredToSpring").gameObject.CompareTag("Boat"))
                     {
-                        towed = true;
                         towedBy = ropes[i].GetPrivateField<SpringJoint>("mooredToSpring").transform.GetComponentInParent<TowingSet>().GetBoatTransform().GetComponent<Rigidbody>();
-                        return ropes[i].GetPrivateField<SpringJoint>("mooredToSpring").transform.GetComponentInParent<TowingSet>().GetBoatTransform().GetComponent<Rigidbody>();
-
+                        flag = true;
                     }
                 }
             }
-            towed = false;
-            return null;
+            towed = flag;
         }
 
         public void AddBollards(GameObject bollard)
         {
-            //if (bollard == null) Plugin.logSource.LogError("null bollard");
             Array[] things;
             if (boatTransform.name.Contains("medi medium")) things = brigBollards;
             else if (boatTransform.name.Contains("dhow medium")) things = sanbuqBollards;
@@ -117,16 +114,16 @@ namespace TowableBoats
 
                 boatBollard.transform.localScale = new Vector3(boatBollard.transform.localScale.x * 0.6f, boatBollard.transform.localScale.y * 0.6f, boatBollard.transform.localScale.z * 0.6f);
                 boatBollard.tag = "Boat";
-
-                //Plugin.logSource.LogInfo($"{i}");
+                foreach (Outline outline in boatBollard.GetComponents<Outline>())
+                {
+                    if (ReferenceEquals(outline, boatBollard.GetPrivateField("outline")))
+                    {
+                        Destroy(outline);
+                    }
+                }
             }
             bollards = gameObject.GetComponentsInChildren<GPButtonDockMooring>();
-            //Debug.Log("added bollards");
-
-
         }
-
-
 
         static readonly object[] brig0 = { "bollard_stern_left", new Vector3(-14.9f, 4.36f, 2.23f), new Quaternion(0.7071068f, 0f, 0f, 0.7071068f) }; // 90, 0, 0
         static readonly object[] brig1 = { "bollard_stern_right", new Vector3(-14.9f, 4.36f, -2.23f), new Quaternion(0.7071068f, 0f, 0f, 0.7071068f) };
