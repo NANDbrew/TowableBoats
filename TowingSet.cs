@@ -138,24 +138,24 @@ namespace TowableBoats
         static readonly object[] brig1 = { "bollard_stern_right", new Vector3(-14.9f, 4.36f, -2.23f), new Quaternion(0.7071068f, 0f, 0f, 0.7071068f) };
         static readonly object[] brig2 = { "bollard_mid_aft_left", new Vector3(-2.3f, 3.53f, 3.27f), new Quaternion(-0.7058f, 0.0252f, -0.0246f, 0.7075f) }; // 270, 0, 0
         static readonly object[] brig3 = { "bollard_mid_aft_right", new Vector3(-2.3f, 3.53f, -3.27f), new Quaternion(-0.7058f, 0.0252f, -0.0246f, 0.7075f) };
-        static readonly object[] brig4 = { "bollard_mid_fore_left", new Vector3(6f, 3.62f, 2.92f), new Quaternion(-0.7041f, 0.0292f, 0.0692f, 0.7061f) };
-        static readonly object[] brig5 = { "bollard_mid_fore_right", new Vector3(6f, 3.62f, -2.92f), new Quaternion(-0.7036f, -0.0384f, 0.0012f, 0.7095f) };
+        static readonly object[] brig4 = { "bollard_mid_fore_left", new Vector3(4.85f, 3.57f, 3.02f), new Quaternion(-0.7041f, 0.0292f, 0.0692f, 0.7061f) };
+        static readonly object[] brig5 = { "bollard_mid_fore_right", new Vector3(4.85f, 3.57f, -3.02f), new Quaternion(-0.7036f, -0.0384f, 0.0012f, 0.7095f) };
         static readonly Array[] brigBollards = { brig0, brig1, brig2, brig3, brig4, brig5 };
 
-        static readonly object[] sanbuq0 = { "bollard_stern_left", new Vector3(-11.5f, 3.33f, 2.22f), new Quaternion(0.7071058f, 0f, 0.0599f, -0.7071058f) }; // 270, 0, 0
-        static readonly object[] sanbuq1 = { "bollard_stern_right", new Vector3(-11.5f, 3.33f, -2.22f), new Quaternion(0.7071058f, 0f, 0.0599f, -0.7071058f) };
+        static readonly object[] sanbuq0 = { "bollard_stern_left", new Vector3(-12.08f, 2.12f, 1.48f), new Quaternion(0.4912f, -0.5087f, -0.5087f, -0.4912f) }; // 270, 92, 0
+        static readonly object[] sanbuq1 = { "bollard_stern_right", new Vector3(-12.08f, 2.12f, -1.48f), new Quaternion(0.5087f, -0.4912f, -0.4912f, -0.5087f) };
         static readonly object[] sanbuq2 = { "bollard_mid_aft_left", new Vector3(-1.4f, 2.12f, 2.46f), new Quaternion(0.7071068f, 0f, 0f, -0.7071068f) };
         static readonly object[] sanbuq3 = { "bollard_mid_aft_right", new Vector3(-1.4f, 2.12f, -2.46f), new Quaternion(0.7071068f, 0f, 0f, -0.7071068f) };
-        static readonly object[] sanbuq4 = { "bollard_mid_fore_left", new Vector3(4.7f, 2.34f, 2.21f), new Quaternion(-0.7071f, 0.0f, 0.0371f, 0.7061f) }; // 270, 4, 0
-        static readonly object[] sanbuq5 = { "bollard_mid_fore_right", new Vector3(4.7f, 2.34f, -2.21f), new Quaternion(-0.7058f, -0.0432f, 0.0062f, 0.7071f) }; // 270, -4, 0
+        static readonly object[] sanbuq4 = { "bollard_mid_fore_left", new Vector3(4.2f, 2.32f, 2.25f), new Quaternion(-0.7071f, 0.0f, 0.0371f, 0.7061f) }; // 270, 4, 0
+        static readonly object[] sanbuq5 = { "bollard_mid_fore_right", new Vector3(4.2f, 2.32f, -2.25f), new Quaternion(-0.7058f, -0.0432f, 0.0062f, 0.7071f) }; // 270, -4, 0
         static readonly Array[] sanbuqBollards = { sanbuq0, sanbuq1, sanbuq2, sanbuq3, sanbuq4, sanbuq5 };
 
-        static readonly object[] junk0 = { "bollard_stern_left", new Vector3(-9.6f, 2.24f, 1.1f), new Quaternion(0.6963642f, 0.1227878f, 0.1227878f, -0.6963642f) }; //270, -20, 0
-        static readonly object[] junk1 = { "bollard_stern_right", new Vector3(-9.6f, 2.24f, -1.1f), new Quaternion(0.6963642f, -0.1227878f, -0.1227878f, -0.6963642f) };
-        static readonly object[] junk2 = { "bollard_mid_aft_left", new Vector3(1.5f, 1.04f, 2.5f), new Quaternion(0.7071068f, 0f, 0f, -0.7071068f) };
-        static readonly object[] junk3 = { "bollard_mid_aft_right", new Vector3(1.5f, 1.04f, -2.5f), new Quaternion(0.7071068f, 0f, 0f, -0.7071068f) };
-        static readonly object[] junk4 = { "bollard_mid_fore_left", new Vector3(8.44f, 1.3f, 1.84f), new Quaternion(0.7010574f, -0.092296f, -0.092296f, -0.7010574f) }; //270, 15, 0
-        static readonly object[] junk5 = { "bollard_mid_fore_right", new Vector3(8.44f, 1.3f, -1.84f), new Quaternion(0.7010574f, 0.092296f, 0.092296f, -0.7010574f) }; //270, -15, 0
+        static readonly object[] junk0 = { "bollard_stern_left", new Vector3(-9.7f, 2.27f, 0.8f), new Quaternion(0.4731f, -0.5255f, -0.5255f, -0.4731f) }; //270, 96, 0
+        static readonly object[] junk1 = { "bollard_stern_right", new Vector3(-9.7f, 2.27f, -0.8f), new Quaternion(0.5255f, -0.4731f, -0.4731f, -0.5255f) };
+        static readonly object[] junk2 = { "bollard_mid_aft_left", new Vector3(1.24f, 1.01f, 2.52f), new Quaternion(0.7071068f, 0f, 0f, -0.7071068f) };
+        static readonly object[] junk3 = { "bollard_mid_aft_right", new Vector3(1.24f, 1.01f, -2.52f), new Quaternion(0.7071068f, 0f, 0f, -0.7071068f) };
+        static readonly object[] junk4 = { "bollard_mid_fore_left", new Vector3(7.68f, 1.1f, 2.02f), new Quaternion(-0.7071f, 0.0062f, 0.0309f, 0.7064f) }; //270, 15, 0
+        static readonly object[] junk5 = { "bollard_mid_fore_right", new Vector3(7.68f, 1.1f, -2.02f), new Quaternion(-0.7064f, -0.0309f, -0.0061f, 0.7071f) }; //270, -15, 0
         static readonly Array[] junkBollards = { junk0, junk1, junk2, junk3, junk4, junk5 };
 
     }
