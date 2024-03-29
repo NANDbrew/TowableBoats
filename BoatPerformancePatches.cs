@@ -70,10 +70,15 @@ namespace TowableBoats
         private static class BoatPerformanceSwitcherPatch
         {
             [HarmonyPatch("Update")]
-            [HarmonyPostfix]
-            public static void BoatPerformaceSwitcherPatch(BoatPerformanceSwitcher __instance, ref Rigidbody ___body, ref bool ___performanceModeOn)
+            [HarmonyPrefix]
+            public static bool BoatPerformaceSwitcherPatch(BoatPerformanceSwitcher __instance, ref Rigidbody ___body, BoatDamage ___damage)
             {
-                if (__instance.GetComponentInParent<TowingSet>() == null) return;
+                bool flag = true;
+                if (GameState.lastBoat == __instance.transform || ___damage.sunk)
+                {
+                    return true;
+                }
+                if (__instance.GetComponentInParent<TowingSet>() == null) return true;
                 // check if we're being towed
                 if (__instance.GetComponentInParent<TowingSet>().towed && Plugin.performanceMode.Value > 0)
                 {
@@ -83,15 +88,18 @@ namespace TowableBoats
                         if (towedBy.transform == GameState.currentBoat || towedBy.transform == GameState.lastBoat)
                         {
                             //Plugin.logSource.LogInfo("found Boat");
-                            __instance.InvokePrivateMethod("SetPerformanceMode", false);
+
+                                //__instance.InvokePrivateMethod("SetPerformanceMode", false);
+                                flag = false;
+                            
                             break;
                         }
                         if (towedBy.gameObject.GetComponent<TowingSet>().towed)
-
                         {
                             towedBy = towedBy.gameObject.GetComponent<TowingSet>().GetTowedBy();
                             continue;
                         }
+                        //flag = true;
                         break;
                     }
                 }
@@ -102,14 +110,17 @@ namespace TowableBoats
                     //Plugin.logSource.LogInfo("found bollard");
                     List<Rigidbody> towedBoats = ___body.gameObject.GetComponent<TowingSet>().GetTowedBoats();
                     for (int i = 0; i < 5; i++)
-
                     {
                         foreach (Rigidbody body1 in towedBoats)
                         {
                             if (body1.transform == GameState.currentBoat || body1.transform == GameState.lastBoat)
                             {
-                                __instance.InvokePrivateMethod("SetPerformanceMode", false);
-                                return;
+
+                                    //__instance.InvokePrivateMethod("SetPerformanceMode", false);
+                                    flag = false;
+                                
+                                i = 6;
+                                break;
                             }
                             if (body1.gameObject.GetComponent<TowingSet>().towing)
                             {
@@ -118,8 +129,13 @@ namespace TowableBoats
                         }
                     }
                 }
+                if (__instance.performanceModeIsOn() != flag)
+                {
+                    __instance.InvokePrivateMethod("SetPerformanceMode", flag);
+
+                }
+                return false;
             }
         }
-
     }
 }
