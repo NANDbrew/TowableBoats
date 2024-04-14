@@ -21,49 +21,49 @@ namespace TowableBoats
             [HarmonyPostfix]
             public static void BoatKinematicPatch(BoatHorizon __instance, ref Rigidbody ___rigidbody)
             {
+                if (!__instance.GetComponentInParent<TowingSet>()) return;
+                if (!___rigidbody.isKinematic || !GameState.sleeping) return;
 
-                if (GameState.sleeping)
+                if (__instance.GetComponentInParent<TowingSet>().towed)
                 {
-                    if (__instance.GetComponentInParent<TowingSet>().towed)
+                    Rigidbody towedBy = __instance.GetComponentInParent<TowingSet>().GetTowedBy();
+                    for (int i = 0; i < 5; i++)
                     {
-                        Rigidbody towedBy = __instance.GetComponentInParent<TowingSet>().GetTowedBy();
-                        for (int i = 0; i < 5; i++)
+                        if (towedBy.transform == GameState.currentBoat || towedBy.transform == GameState.lastBoat)
                         {
-                            if (towedBy.transform == GameState.currentBoat || towedBy.transform == GameState.lastBoat)
-                            {
-                                ___rigidbody.isKinematic = false;
-                                break;
-                            }
-                            if (towedBy.gameObject.GetComponent<TowingSet>().towed)
-
-                            {
-                                towedBy = towedBy.gameObject.GetComponent<TowingSet>().GetTowedBy();
-                                continue;
-                            }
+                            ___rigidbody.isKinematic = false;
                             break;
                         }
-                    }
+                        if (towedBy.gameObject.GetComponent<TowingSet>().towed)
 
-                    if (__instance.GetComponentInParent<TowingSet>().towing)
-                    {
-                        List<Rigidbody> towedBoats = __instance.GetComponentInParent<TowingSet>().GetTowedBoats();
-                        for (int i = 0; i < 5; i++)
                         {
-                            foreach (Rigidbody body1 in towedBoats)
+                            towedBy = towedBy.gameObject.GetComponent<TowingSet>().GetTowedBy();
+                            continue;
+                        }
+                        break;
+                    }
+                }
+
+                if (__instance.GetComponentInParent<TowingSet>().towing)
+                {
+                    List<Rigidbody> towedBoats = __instance.GetComponentInParent<TowingSet>().GetTowedBoats();
+                    for (int i = 0; i < 5; i++)
+                    {
+                        foreach (Rigidbody body1 in towedBoats)
+                        {
+                            if (body1.transform == GameState.currentBoat || body1.transform == GameState.lastBoat)
                             {
-                                if (body1.transform == GameState.currentBoat || body1.transform == GameState.lastBoat)
-                                {
-                                    ___rigidbody.isKinematic = false;
-                                    return;
-                                }
-                                if (body1.gameObject.GetComponent<TowingSet>().towing)
-                                {
-                                    towedBoats = body1.gameObject.GetComponent<TowingSet>().GetTowedBoats();
-                                }
+                                ___rigidbody.isKinematic = false;
+                                return;
+                            }
+                            if (body1.gameObject.GetComponent<TowingSet>().towing)
+                            {
+                                towedBoats = body1.gameObject.GetComponent<TowingSet>().GetTowedBoats();
                             }
                         }
                     }
                 }
+                
             }
         }
         [HarmonyPatch(typeof(BoatPerformanceSwitcher))]

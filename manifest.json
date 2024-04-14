@@ -1,0 +1,10 @@
+﻿{
+    "name": "TowableBoats",
+    "version_number": "0.1.6",
+    "website_url": "https://github.com/NANDbrew/TowableBoats",
+    "description": "Tow boats by mooring them to new towing cleats.",
+    "dependencies": [
+        "BepInEx-BepInExPack-5.4.2100",
+        "App24-SailwindModdingHelper-2.0.3"
+    ]
+}

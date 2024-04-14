@@ -12,7 +12,7 @@ namespace TowableBoats
 {
     internal class MooringPatches
     {
-        private static GameObject bollard;
+        private static GameObject cleat;
 
 
 
@@ -23,7 +23,7 @@ namespace TowableBoats
             [HarmonyPrefix]
             public static void MooringComponentPatch(GPButtonDockMooring __instance)
             {
-                if (!bollard) bollard = __instance.gameObject;
+                if (!cleat) cleat = __instance.gameObject;
                 //Plugin.logSource.LogInfo("GPButtonDockMooring is awake");
             }
         }
@@ -36,15 +36,15 @@ namespace TowableBoats
             public static void MooringComponentPatch(MooringSet __instance)
             {
                 TowingSet towingManager = __instance.transform.parent.gameObject.AddComponent<TowingSet>();
-                __instance.StartCoroutine(AddBollards(towingManager));
+                __instance.StartCoroutine(AddCleats(towingManager));
 
             }
-            private static IEnumerator AddBollards(TowingSet towingManager)
+            private static IEnumerator AddCleats(TowingSet towingManager)
             {
-                Debug.Log("waiting for bollard");
-                yield return new WaitUntil(() => bollard != null);
-                towingManager.AddBollards(bollard);
-                Debug.Log("got bollard");
+                Debug.Log("waiting for cleat");
+                yield return new WaitUntil(() => cleat != null);
+                towingManager.AddCleats(cleat);
+                Debug.Log("got cleat");
 
             }
         }
@@ -104,14 +104,14 @@ namespace TowableBoats
             [HarmonyPostfix]
             public static void UnmoorAllRopesPatch(BoatMooringRopes __instance)
             {
-                if (!__instance.GetComponentInParent<TowingSet>() || __instance.GetComponentInParent<TowingSet>().GetBollards() == null) return;
+                if (!__instance.GetComponentInParent<TowingSet>() || __instance.GetComponentInParent<TowingSet>().GetCleats() == null) return;
 
-                foreach (GPButtonDockMooring bollard in __instance.GetComponentInParent<TowingSet>().GetBollards())
+                foreach (GPButtonDockMooring cleat in __instance.GetComponentInParent<TowingSet>().GetCleats())
 
                 {
-                    if (bollard.GetComponentInChildren<PickupableBoatMooringRope>())
+                    if (cleat.GetComponentInChildren<PickupableBoatMooringRope>())
                     {
-                        PickupableBoatMooringRope rope = bollard.GetComponentInChildren<PickupableBoatMooringRope>();
+                        PickupableBoatMooringRope rope = cleat.GetComponentInChildren<PickupableBoatMooringRope>();
                         Debug.Log("found a thing");
                         rope.Unmoor();
                         rope.ResetRopePos();

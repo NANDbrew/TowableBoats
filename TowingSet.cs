@@ -19,16 +19,20 @@ namespace TowableBoats
         private List<Rigidbody> towedBoats;
         public bool towing;
         public bool towed;
-        private GPButtonDockMooring[] bollards;
+        private GPButtonDockMooring[] cleats;
+        public bool smallBoat;
+
+        //public BoatPart boatPart;
+        //public BoatPartOption partOption;
 
         public Transform GetBoatTransform() { return boatTransform; }
         public List<Rigidbody> GetTowedBoats() { return towedBoats; }
         public Rigidbody GetTowedBy() { return towedBy; }
-        public GPButtonDockMooring[] GetBollards() { return bollards; }
+        public GPButtonDockMooring[] GetCleats() { return cleats; }
 
         private void Awake()
         {
-
+            
             mooringSetTransform = gameObject.GetComponentInChildren<MooringSet>().transform.GetChild(0);
             //Debug.Log("base parent is: " + base.transform.name);
             boatTransform = base.transform;
@@ -36,19 +40,19 @@ namespace TowableBoats
 
         private void FixedUpdate()
         {
-            //GPButtonDockMooring[] bollards = gameObject.GetComponentsInChildren<GPButtonDockMooring>();
-            if (bollards != null && Plugin.drag.Value == true)
+            //GPButtonDockMooring[] cleats = gameObject.GetComponentsInChildren<GPButtonDockMooring>();
+            if (cleats != null && Plugin.drag.Value == true)
             {
-                for (int i = 0; i < bollards.Length; i++)
+                for (int i = 0; i < cleats.Length; i++)
                 {
-                    if (bollards[i].transform.GetComponentInChildren<PickupableBoatMooringRope>())
+                    if (cleats[i].transform.GetComponentInChildren<PickupableBoatMooringRope>())
                     {
-                        Vector3 force = bollards[i].transform.GetComponentInChildren<SpringJoint>().currentForce;
-                        if (bollards[i].transform.GetComponentInChildren<SpringJoint>().connectedBody.gameObject.GetComponent<BoatPerformanceSwitcher>().performanceModeIsOn())
+                        Vector3 force = cleats[i].transform.GetComponentInChildren<SpringJoint>().currentForce;
+                        if (cleats[i].transform.GetComponentInChildren<SpringJoint>().connectedBody.gameObject.GetComponent<BoatPerformanceSwitcher>().performanceModeIsOn())
                         {
                             force /= 10;
                         }
-                        gameObject.GetComponent<Rigidbody>().AddForceAtPosition(force / 3f, bollards[i].transform.position, ForceMode.Force);
+                        gameObject.GetComponent<Rigidbody>().AddForceAtPosition(force / 3f, cleats[i].transform.position, ForceMode.Force);
                     }
                 }
             }
@@ -57,6 +61,18 @@ namespace TowableBoats
                 UpdateTowedBoats();
                 UpdateTowedBy();
             }
+            if (smallBoat)
+            {
+                foreach (var cleat in cleats)
+                {
+                    if (!Plugin.smallBoats.Value && cleat.GetComponentInChildren<PickupableBoatMooringRope>() is PickupableBoatMooringRope rope)
+                    {
+                        rope.Unmoor();
+                        rope.ResetRopePos();
+                    }
+                    cleat.gameObject.SetActive(Plugin.smallBoats.Value);
+                }
+            }
         }
 
         public void UpdateTowedBoats()
@@ -64,13 +80,13 @@ namespace TowableBoats
             towedBoats = new List<Rigidbody>();
             bool flag = false;
 
-            if (bollards != null)
+            if (cleats != null)
             {
-                for (int i = 0; i < bollards.Length; i++)
+                for (int i = 0; i < cleats.Length; i++)
                 {
-                    if (bollards[i].transform.GetComponentInChildren<PickupableBoatMooringRope>() != null)
+                    if (cleats[i].transform.GetComponentInChildren<PickupableBoatMooringRope>() != null)
                     {
-                        towedBoats.Add(bollards[i].transform.GetComponentInChildren<PickupableBoatMooringRope>().GetBoatRigidbody());
+                        towedBoats.Add(cleats[i].transform.GetComponentInChildren<PickupableBoatMooringRope>().GetBoatRigidbody());
                         flag = true;
                     }
                 }
@@ -104,74 +120,94 @@ namespace TowableBoats
 
         }
 
-        public void AddBollards(GameObject bollard)
+        public void AddCleats(GameObject refCleat)
         {
-            Array[] things;
-            if (boatTransform.name.Contains("medi medium")) things = brigBollards;
-            else if (boatTransform.name.Contains("dhow medium")) things = sanbuqBollards;
-            else if (boatTransform.name.Contains("junk medium")) things = junkBollards;
-            else if (boatTransform.name.Contains("medi small") && Plugin.smallBoats.Value) things = cogBollards;
-            else if (boatTransform.name.Contains("dhow small") && Plugin.smallBoats.Value) things = dhowBollards;
-            else if (boatTransform.name.Contains("junk small") && Plugin.smallBoats.Value) things = kakamBollards;
+            Array[] cleatDefs;
+            if (boatTransform.name.Contains("medi medium")) cleatDefs = CleatDefs.brig;
+            else if (boatTransform.name.Contains("dhow medium")) cleatDefs = CleatDefs.sanbuq;
+            else if (boatTransform.name.Contains("junk medium")) cleatDefs = CleatDefs.junk;
+            else if (boatTransform.name.Contains("medi small")) { cleatDefs = CleatDefs.cog; smallBoat = true; }
+            else if (boatTransform.name.Contains("dhow small")) { cleatDefs = CleatDefs.dhow; smallBoat = true; }
+            else if (boatTransform.name.Contains("junk small")) { cleatDefs = CleatDefs.kakam; smallBoat = true; }
             else return;
 
-            for (int i = 0; i < things.Length; i++)
+            GameObject towingSet = Instantiate(new GameObject(), mooringSetTransform.position, mooringSetTransform.rotation, mooringSetTransform.parent);
+            towingSet.name = "towing set";
+
+            /*SpringJoint boatSpring = base.gameObject.AddComponent<SpringJoint>();
+            boatSpring.autoConfigureConnectedAnchor = false;
+            boatSpring.connectedAnchor = new TowingSet().transform.localPosition;
+            boatSpring.maxDistance = 10;
+            boatSpring.minDistance = 0;
+            boatSpring.damper = 1;
+            boatSpring.spring = 100;*/
+
+            #region boatpart
+            //GameObject towing_cleats = Instantiate(new GameObject(), towingSet.transform);
+            //towing_cleats.name = "towing cleats";
+
+            /*
+                        GameObject towing_none = Instantiate(new GameObject(), towingSet.transform);
+
+                        partOption = towing_cleats.AddComponent<BoatPartOption>();
+                        Debug.Log("added boatPartOption component");
+                        partOption.optionName = "towing cleats";
+                        partOption.basePrice = cleatDefs.Length * 200;
+                        partOption.installCost = 100;
+                        partOption.mass = 10;
+                        partOption.childOptions = new GameObject[0];
+                        partOption.requires = new List<BoatPartOption>();
+                        partOption.requiresDisabled = new List<BoatPartOption>();
+                        partOption.walkColObject = towing_cleats;
+
+                        Debug.Log("set fields for part Option");
+
+                        BoatPartOption cleatsNone = towing_none.AddComponent<BoatPartOption>();
+                        cleatsNone.optionName = "(no cleats)";
+                        cleatsNone.name = "no cleats";
+                        cleatsNone.childOptions = new GameObject[0];
+                        cleatsNone.requires = new List<BoatPartOption>();
+                        cleatsNone.requiresDisabled = new List<BoatPartOption>();
+                        cleatsNone.walkColObject = towing_none;
+
+                        boatPart = new BoatPart();
+
+                        boatPart.partOptions = new List<BoatPartOption> { cleatsNone, partOption };
+
+                        boatPart.category = 1;
+                        boatPart.activeOption = 0;
+
+                        Debug.Log("added part options to boatPart");
+                        var customParts = boatTransform.gameObject.GetComponent<BoatCustomParts>();
+                        if (customParts) Debug.Log("found customparts component");
+                        customParts.availableParts.Add(boatPart);
+                        Debug.Log("Added boatPart to availableParts");*/
+            #endregion
+
+            for (int i = 0; i < cleatDefs.Length; i++)
             {
-                object[] thing = things[i] as object[];
-                GameObject boatBollard = Instantiate(bollard, (Vector3)thing[1], (Quaternion)thing[2]);
-                boatBollard.transform.SetParent(mooringSetTransform, false);
-                boatBollard.name = (string)thing[0];
+                object[] cleatDef = cleatDefs[i] as object[];
+                GameObject towingCleat = Instantiate(refCleat, (Vector3)cleatDef[1], (Quaternion)cleatDef[2]);
+                towingCleat.transform.SetParent(towingSet.transform, false);
+                towingCleat.name = (string)cleatDef[0];
 
-                boatBollard.transform.localScale = (Vector3)thing[3];
-                boatBollard.tag = "Boat";
+                towingCleat.transform.localScale = (Vector3)cleatDef[3];
+                towingCleat.tag = "Boat";
 
-                foreach (Outline outline in boatBollard.GetComponents<Outline>())
+                //towingCleat.GetComponent<GPButtonDockMooring>().spring = boatSpring;
+
+                foreach (Outline outline in towingCleat.GetComponents<Outline>())
                 {
 
-                    if (!ReferenceEquals(outline, boatBollard.GetPrivateField("outline")))
+                    if (!ReferenceEquals(outline, towingCleat.GetPrivateField("outline")))
                     {
                         Destroy(outline);
                     }
                 }
             }
-            bollards = gameObject.GetComponentsInChildren<GPButtonDockMooring>();
+            cleats = towingSet.GetComponentsInChildren<GPButtonDockMooring>();
         }
 
-        static readonly object[] brig0 = { "bollard_stern_left", new Vector3(-14.9f, 4.36f, 2.23f), new Quaternion(0.7071068f, 0f, 0f, 0.7071068f), new Vector3(0.6f, 0.6f, 0.6f) }; // 90, 0, 0
-        static readonly object[] brig1 = { "bollard_stern_right", new Vector3(-14.9f, 4.36f, -2.23f), new Quaternion(0.7071068f, 0f, 0f, 0.7071068f), new Vector3(0.6f, 0.6f, 0.6f) };
-        static readonly object[] brig2 = { "bollard_mid_aft_left", new Vector3(-2.3f, 3.53f, 3.27f), new Quaternion(-0.7058f, 0.0252f, -0.0246f, 0.7075f), new Vector3(0.6f, 0.6f, 0.6f) }; // 270, 0, 0
-        static readonly object[] brig3 = { "bollard_mid_aft_right", new Vector3(-2.3f, 3.53f, -3.27f), new Quaternion(-0.7058f, 0.0252f, -0.0246f, 0.7075f), new Vector3(0.6f, 0.6f, 0.6f) };
-        static readonly object[] brig4 = { "bollard_mid_fore_left", new Vector3(4.85f, 3.57f, 3.02f), new Quaternion(-0.7041f, 0.0292f, 0.0692f, 0.7061f), new Vector3(0.6f, 0.6f, 0.6f) };
-        static readonly object[] brig5 = { "bollard_mid_fore_right", new Vector3(4.85f, 3.57f, -3.02f), new Quaternion(-0.7036f, -0.0384f, 0.0012f, 0.7095f), new Vector3(0.6f, 0.6f, 0.6f) };
-        static readonly Array[] brigBollards = { brig0, brig1, brig2, brig3, brig4, brig5 };
-
-        static readonly object[] sanbuq0 = { "bollard_stern_left", new Vector3(-12.08f, 2.12f, 1.48f), new Quaternion(0.4912f, -0.5087f, -0.5087f, -0.4912f), new Vector3(0.6f, 0.6f, 0.6f) }; // 270, 92, 0
-        static readonly object[] sanbuq1 = { "bollard_stern_right", new Vector3(-12.08f, 2.12f, -1.48f), new Quaternion(0.5087f, -0.4912f, -0.4912f, -0.5087f), new Vector3(0.6f, 0.6f, 0.6f) };
-        static readonly object[] sanbuq2 = { "bollard_mid_aft_left", new Vector3(-1.4f, 2.12f, 2.46f), new Quaternion(0.7071068f, 0f, 0f, -0.7071068f), new Vector3(0.6f, 0.6f, 0.6f) };
-        static readonly object[] sanbuq3 = { "bollard_mid_aft_right", new Vector3(-1.4f, 2.12f, -2.46f), new Quaternion(0.7071068f, 0f, 0f, -0.7071068f), new Vector3(0.6f, 0.6f, 0.6f) };
-        static readonly object[] sanbuq4 = { "bollard_mid_fore_left", new Vector3(4.2f, 2.32f, 2.25f), new Quaternion(-0.7071f, 0.0f, 0.0371f, 0.7061f), new Vector3(0.6f, 0.6f, 0.6f) }; // 270, 4, 0
-        static readonly object[] sanbuq5 = { "bollard_mid_fore_right", new Vector3(4.2f, 2.32f, -2.25f), new Quaternion(-0.7058f, -0.0432f, 0.0062f, 0.7071f), new Vector3(0.6f, 0.6f, 0.6f) }; // 270, -4, 0
-        static readonly Array[] sanbuqBollards = { sanbuq0, sanbuq1, sanbuq2, sanbuq3, sanbuq4, sanbuq5 };
-
-        static readonly object[] junk0 = { "bollard_stern_left", new Vector3(-9.7f, 2.27f, 0.8f), new Quaternion(0.4731f, -0.5255f, -0.5255f, -0.4731f), new Vector3(0.6f, 0.6f, 0.6f) }; //270, 96, 0
-        static readonly object[] junk1 = { "bollard_stern_right", new Vector3(-9.7f, 2.27f, -0.8f), new Quaternion(0.5255f, -0.4731f, -0.4731f, -0.5255f), new Vector3(0.6f, 0.6f, 0.6f) };
-        static readonly object[] junk2 = { "bollard_mid_aft_left", new Vector3(1.24f, 1.01f, 2.52f), new Quaternion(0.7071068f, 0f, 0f, -0.7071068f), new Vector3(0.6f, 0.6f, 0.6f) };
-        static readonly object[] junk3 = { "bollard_mid_aft_right", new Vector3(1.24f, 1.01f, -2.52f), new Quaternion(0.7071068f, 0f, 0f, -0.7071068f), new Vector3(0.6f, 0.6f, 0.6f) };
-        static readonly object[] junk4 = { "bollard_mid_fore_left", new Vector3(7.68f, 1.1f, 2.02f), new Quaternion(-0.7071f, 0.0062f, 0.0309f, 0.7064f), new Vector3(0.6f, 0.6f, 0.6f) }; //270, 15, 0
-        static readonly object[] junk5 = { "bollard_mid_fore_right", new Vector3(7.68f, 1.1f, -2.02f), new Quaternion(-0.7064f, -0.0309f, -0.0061f, 0.7071f), new Vector3(0.6f, 0.6f, 0.6f) }; //270, -15, 0
-        static readonly Array[] junkBollards = { junk0, junk1, junk2, junk3, junk4, junk5 };
-
-        static readonly object[] cog0 = { "bollard_stern_left", new Vector3(6.66f, 2.41f, 1.25f), new Quaternion(0.5f, -0.5f, -0.5f, -0.5f), new Vector3(0.5f, 0.5f, 0.5f) };
-        static readonly object[] cog1 = { "bollard_stern_right", new Vector3(6.66f, 2.41f, -1.25f), new Quaternion(0.5f, -0.5f, -0.5f, -0.5f), new Vector3(0.5f, 0.5f, 0.5f) };
-        static readonly Array[] cogBollards = { cog0, cog1 };
-
-        static readonly object[] dhow0 = { "bollard_stern_left", new Vector3(-6.4f, 1.815f, 1.53f), new Quaternion(-0.0616f, -0.7044f, -0.7044f, -0.0616f), new Vector3(0.5f, 0.5f, 0.5f) };
-        static readonly object[] dhow1 = { "bollard_stern_right", new Vector3(-6.4f, 1.815f, -1.53f), new Quaternion(-0.0616f, -0.7044f, -0.7044f, -0.0616f), new Vector3(0.5f, 0.5f, 0.5f) };
-        static readonly Array[] dhowBollards = { dhow0, dhow1 };
-
-        static readonly object[] kakam0 = { "bollard_stern_left", new Vector3(-6.3f, 2.86f, 0.64f), new Quaternion(0.6744f, 0.2126f, 0.2126f, -0.6744f), new Vector3(0.5f, 0.5f, 0.5f) };
-        static readonly object[] kakam1 = { "bollard_stern_right", new Vector3(-6.3f, 2.86f, -0.64f), new Quaternion(0.6744f, -0.2126f, -0.2126f, -0.6744f), new Vector3(0.5f, 0.5f, 0.5f) };
-        static readonly Array[] kakamBollards = { kakam0, kakam1 };
 
     }
 }

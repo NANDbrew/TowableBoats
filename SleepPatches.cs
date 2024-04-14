@@ -18,6 +18,7 @@ namespace TowableBoats
             [HarmonyPostfix]
             public static void Postfix(ref bool __result)
             {
+                if (!GameState.currentBoat) return;
                 if (__result && GameState.currentBoat.GetComponentInParent<TowingSet>().towed)
                 {
                     __result = false;
