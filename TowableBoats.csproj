@@ -111,6 +111,10 @@
     <Error Condition="!Exists('packages\BepInEx.Core.5.4.11\build\BepInEx.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\BepInEx.Core.5.4.11\build\BepInEx.Core.targets'))" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>xcopy /y "TowableBoats.dll" "C:\Program Files (x86)\Steam\steamapps\common\Sailwind\BepInEx\plugins\TowableBoats"</PostBuildEvent>
+    <PostBuildEvent>xcopy /y "TowableBoats.dll" "C:\Program Files (x86)\Steam\steamapps\common\Sailwind\BepInEx\plugins\TowableBoats"
+cd ..\..
+xcopy /y "README.md" "C:\Program Files (x86)\Steam\steamapps\common\Sailwind\BepInEx\plugins\TowableBoats"
+xcopy /y "manifest.json" "C:\Program Files (x86)\Steam\steamapps\common\Sailwind\BepInEx\plugins\TowableBoats"
+xcopy /y "icon.png" "C:\Program Files (x86)\Steam\steamapps\common\Sailwind\BepInEx\plugins\TowableBoats"</PostBuildEvent>
   </PropertyGroup>
 </Project>
