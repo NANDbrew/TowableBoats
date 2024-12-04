@@ -1,6 +1,5 @@
 using HarmonyLib;
 
-using SailwindModdingHelper;
 
 using System;
 using System.Collections.Generic;
@@ -89,7 +88,7 @@ namespace TowableBoats
                         {
                             //Plugin.logSource.LogInfo("found Boat");
 
-                                //__instance.InvokePrivateMethod("SetPerformanceMode", false);
+                                //__instance.Util.InvokePrivate("SetPerformanceMode", false);
                                 flag = false;
                             
                             break;
@@ -116,7 +115,7 @@ namespace TowableBoats
                             if (body1.transform == GameState.currentBoat || body1.transform == GameState.lastBoat)
                             {
 
-                                    //__instance.InvokePrivateMethod("SetPerformanceMode", false);
+                                    //__instance.Util.InvokePrivate("SetPerformanceMode", false);
                                     flag = false;
                                 
                                 i = 6;
@@ -131,7 +130,7 @@ namespace TowableBoats
                 }
                 if (__instance.performanceModeIsOn() != flag)
                 {
-                    __instance.InvokePrivateMethod("SetPerformanceMode", flag);
+                    Util.InvokePrivate(__instance, "SetPerformanceMode", flag);
 
                 }
                 return false;

@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using SailwindModdingHelper;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,13 +7,15 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using cakeslice;
+using BepInEx;
+using System.Reflection;
 
 namespace TowableBoats
 {
     internal class TowingSet : MonoBehaviour
     {
-        private Transform mooringSetTransform;
-        private Transform boatTransform;
+        //private Transform mooringSetTransform;
+        //private Transform boatTransform;
         private Rigidbody towedBy;
         private List<Rigidbody> towedBoats;
         public bool towing;
@@ -25,23 +26,36 @@ namespace TowableBoats
         //public BoatPart boatPart;
         //public BoatPartOption partOption;
 
-        public Transform GetBoatTransform() { return boatTransform; }
+        //public Transform GetBoatTransform() { return boatTransform; }
         public List<Rigidbody> GetTowedBoats() { return towedBoats; }
         public Rigidbody GetTowedBy() { return towedBy; }
         public GPButtonDockMooring[] GetCleats() { return cleats; }
 
         private void Awake()
         {
-            
-            mooringSetTransform = gameObject.GetComponentInChildren<MooringSet>().transform.GetChild(0);
+            //mooringSetTransform = gameObject.GetComponentInChildren<MooringSet>().transform.GetChild(0);
             //Debug.Log("base parent is: " + base.transform.name);
-            boatTransform = base.transform;
+            //boatTransform = base.transform;
+            if (transform.Find("towing set") is Transform set)
+            {
+                cleats = set.GetComponentsInChildren<GPButtonDockMooring>();
+            }
+            else
+            {
+                AddCleats();
+            }
         }
 
         private void FixedUpdate()
         {
-            //GPButtonDockMooring[] cleats = gameObject.GetComponentsInChildren<GPButtonDockMooring>();
-            if (cleats != null && Plugin.drag.Value == true)
+
+            if (GameState.justStarted)
+            {
+                UpdateTowedBoats();
+                UpdateTowedBy();
+            }
+            if (cleats == null) return;
+            if (Plugin.drag.Value == true)
             {
                 for (int i = 0; i < cleats.Length; i++)
                 {
@@ -55,11 +69,6 @@ namespace TowableBoats
                         gameObject.GetComponent<Rigidbody>().AddForceAtPosition(force / 3f, cleats[i].transform.position, ForceMode.Force);
                     }
                 }
-            }
-            if (GameState.justStarted)
-            {
-                UpdateTowedBoats();
-                UpdateTowedBy();
             }
             if (smallBoat)
             {
@@ -98,7 +107,6 @@ namespace TowableBoats
 
         public void UpdateTowedBy()
         {
-
             bool flag = false;
 
             towedBy = null;
@@ -108,9 +116,9 @@ namespace TowableBoats
             {
                 if (ropes[i].IsMoored())
                 {
-                    if (ropes[i].GetPrivateField<SpringJoint>("mooredToSpring").gameObject.CompareTag("Boat"))
+                    if (Traverse.Create(ropes[i].GetType()).Field("mooredToSpring").GetValue<SpringJoint>() is SpringJoint spr && spr.gameObject.CompareTag("Boat"))
                     {
-                        towedBy = ropes[i].GetPrivateField<SpringJoint>("mooredToSpring").transform.GetComponentInParent<TowingSet>().GetBoatTransform().GetComponent<Rigidbody>();
+                        towedBy = spr.transform.GetComponentInParent<TowingSet>().gameObject.GetComponent<Rigidbody>();
 
                         flag = true;
                     }
@@ -120,92 +128,30 @@ namespace TowableBoats
 
         }
 
-        public void AddCleats(GameObject refCleat)
+        public void AddCleats()
         {
-            Array[] cleatDefs;
-            if (boatTransform.name.Contains("medi medium")) cleatDefs = CleatDefs.brig;
-            else if (boatTransform.name.Contains("dhow medium")) cleatDefs = CleatDefs.sanbuq;
-            else if (boatTransform.name.Contains("junk medium")) cleatDefs = CleatDefs.junk;
-            else if (boatTransform.name.Contains("medi small")) { cleatDefs = CleatDefs.cog; smallBoat = true; }
-            else if (boatTransform.name.Contains("dhow small")) { cleatDefs = CleatDefs.dhow; smallBoat = true; }
-            else if (boatTransform.name.Contains("junk small")) { cleatDefs = CleatDefs.kakam; smallBoat = true; }
-            else return;
-
-            GameObject towingSet = Instantiate(new GameObject(), mooringSetTransform.position, mooringSetTransform.rotation, mooringSetTransform.parent);
-            towingSet.name = "towing set";
-
-            /*SpringJoint boatSpring = base.gameObject.AddComponent<SpringJoint>();
-            boatSpring.autoConfigureConnectedAnchor = false;
-            boatSpring.connectedAnchor = new TowingSet().transform.localPosition;
-            boatSpring.maxDistance = 10;
-            boatSpring.minDistance = 0;
-            boatSpring.damper = 1;
-            boatSpring.spring = 100;*/
-
-            #region boatpart
-            //GameObject towing_cleats = Instantiate(new GameObject(), towingSet.transform);
-            //towing_cleats.name = "towing cleats";
-
-            /*
-                        GameObject towing_none = Instantiate(new GameObject(), towingSet.transform);
-
-                        partOption = towing_cleats.AddComponent<BoatPartOption>();
-                        Debug.Log("added boatPartOption component");
-                        partOption.optionName = "towing cleats";
-                        partOption.basePrice = cleatDefs.Length * 200;
-                        partOption.installCost = 100;
-                        partOption.mass = 10;
-                        partOption.childOptions = new GameObject[0];
-                        partOption.requires = new List<BoatPartOption>();
-                        partOption.requiresDisabled = new List<BoatPartOption>();
-                        partOption.walkColObject = towing_cleats;
-
-                        Debug.Log("set fields for part Option");
-
-                        BoatPartOption cleatsNone = towing_none.AddComponent<BoatPartOption>();
-                        cleatsNone.optionName = "(no cleats)";
-                        cleatsNone.name = "no cleats";
-                        cleatsNone.childOptions = new GameObject[0];
-                        cleatsNone.requires = new List<BoatPartOption>();
-                        cleatsNone.requiresDisabled = new List<BoatPartOption>();
-                        cleatsNone.walkColObject = towing_none;
-
-                        boatPart = new BoatPart();
-
-                        boatPart.partOptions = new List<BoatPartOption> { cleatsNone, partOption };
-
-                        boatPart.category = 1;
-                        boatPart.activeOption = 0;
-
-                        Debug.Log("added part options to boatPart");
-                        var customParts = boatTransform.gameObject.GetComponent<BoatCustomParts>();
-                        if (customParts) Debug.Log("found customparts component");
-                        customParts.availableParts.Add(boatPart);
-                        Debug.Log("Added boatPart to availableParts");*/
-            #endregion
-
-            for (int i = 0; i < cleatDefs.Length; i++)
+            if (AssetTools.bundle == null) AssetTools.LoadAssetBundles();
+            GameObject prefab;
+            int index = gameObject.GetComponent<SaveableObject>().sceneIndex;
+            try
             {
-                object[] cleatDef = cleatDefs[i] as object[];
-                GameObject towingCleat = Instantiate(refCleat, (Vector3)cleatDef[1], (Quaternion)cleatDef[2]);
-                towingCleat.transform.SetParent(towingSet.transform, false);
-                towingCleat.name = (string)cleatDef[0];
-
-                towingCleat.transform.localScale = (Vector3)cleatDef[3];
-                towingCleat.tag = "Boat";
-
-                //towingCleat.GetComponent<GPButtonDockMooring>().spring = boatSpring;
-
-                foreach (Outline outline in towingCleat.GetComponents<Outline>())
-                {
-
-                    if (!ReferenceEquals(outline, towingCleat.GetPrivateField("outline")))
-                    {
-                        Destroy(outline);
-                    }
-                }
+                if (index == 50) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set brig.prefab");
+                else if (index == 20) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set sanbuq.prefab");
+                else if (index == 80) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set junk.prefab");
+                else if (index == 70) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set jong.prefab");
+                else if (index == 40) { prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set cog.prefab"); smallBoat = true; }
+                else if (index == 10) { prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set dhow.prefab"); smallBoat = true; }
+                else if (index == 90) { prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set kakam.prefab"); smallBoat = true; }
+                else return;
+                var towingSet = UnityEngine.Object.Instantiate(prefab, transform, false);
+                towingSet.name = "towing set";
+                cleats = towingSet.GetComponentsInChildren<GPButtonDockMooring>();
             }
-            cleats = towingSet.GetComponentsInChildren<GPButtonDockMooring>();
+            catch 
+            { 
+                Debug.LogError("TowableBoats: Couldn't load towing set for " + name + "!!");
+            }
+
         }
 
 

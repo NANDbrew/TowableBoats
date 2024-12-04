@@ -8,12 +8,11 @@ using System.Reflection;
 namespace TowableBoats
 {
     [BepInPlugin(PLUGIN_ID, PLUGIN_NAME, PLUGIN_VERSION)]
-    [BepInDependency("com.app24.sailwindmoddinghelper", "2.0.3")]
     public class Plugin : BaseUnityPlugin
     {
         public const string PLUGIN_ID = "com.nandbrew.towableboats";
         public const string PLUGIN_NAME = "Towable Boats";
-        public const string PLUGIN_VERSION = "0.1.7";
+        public const string PLUGIN_VERSION = "0.2.0";
 
         //--settings--
         internal static ConfigEntry<int> performanceMode;
@@ -32,6 +31,8 @@ namespace TowableBoats
             //multiParent = Config.Bind("Settings", "Team towing", false, new ConfigDescription("Allow a boat to BE TOWED BY multiple boats at once (buggy)", null, new ConfigurationManagerAttributes { IsAdvanced = true }));
             drag = Config.Bind("Settings", "Drag", false, new ConfigDescription("Allow boats to pull on the boat towing them (buggy)", null, new ConfigurationManagerAttributes { IsAdvanced = true }));
             smallBoats = Config.Bind("Settings", "Small boats can tow", true, new ConfigDescription("Add anchor points to small boats", null, new ConfigurationManagerAttributes { IsAdvanced = false, Order = 1}));
+            AssetTools.LoadAssetBundles();
+
         }
     }
 }

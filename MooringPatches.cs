@@ -5,29 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using HarmonyLib;
 using UnityEngine;
-using SailwindModdingHelper;
 using System.Collections;
 
 namespace TowableBoats
 {
     internal class MooringPatches
     {
-        private static GameObject cleat;
-
-
-
-        [HarmonyPatch(typeof(GPButtonDockMooring))]
-        private static class GPButtonDockMooringPatches
-        {
-            [HarmonyPatch("Awake")]
-            [HarmonyPrefix]
-            public static void MooringComponentPatch(GPButtonDockMooring __instance)
-            {
-                if (!cleat) cleat = __instance.gameObject;
-                //Plugin.logSource.LogInfo("GPButtonDockMooring is awake");
-            }
-        }
-
         [HarmonyPatch(typeof(MooringSet))]
         private static class MooringSetPatches
         {
@@ -35,18 +18,10 @@ namespace TowableBoats
             [HarmonyPostfix]
             public static void MooringComponentPatch(MooringSet __instance)
             {
-                TowingSet towingManager = __instance.transform.parent.gameObject.AddComponent<TowingSet>();
-                __instance.StartCoroutine(AddCleats(towingManager));
+                __instance.transform.parent.gameObject.AddComponent<TowingSet>();
 
             }
-            private static IEnumerator AddCleats(TowingSet towingManager)
-            {
-                Debug.Log("waiting for cleat");
-                yield return new WaitUntil(() => cleat != null);
-                towingManager.AddCleats(cleat);
-                Debug.Log("got cleat");
 
-            }
         }
         [HarmonyPatch(typeof(PickupableBoatMooringRope))]
         private static class BoatMooringRopePatches
@@ -57,10 +32,9 @@ namespace TowableBoats
             {
                 if (mooring.gameObject.CompareTag("Boat"))
                 {
-                    if (___boatRigidbody.transform != mooring.GetComponentInParent<TowingSet>().GetBoatTransform())
+                    if (___boatRigidbody.transform != mooring.GetComponentInParent<TowingSet>().transform)
                     {
-                        if (!__instance.GetComponentInParent<TowingSet>().towed || mooring.gameObject.GetComponentInParent<TowingSet>().GetBoatTransform() == ___boatRigidbody.gameObject.GetComponentInParent<TowingSet>().GetTowedBy().transform)
-
+                        if (!__instance.GetComponentInParent<TowingSet>().towed || mooring.gameObject.GetComponentInParent<TowingSet>().transform == ___boatRigidbody.gameObject.GetComponentInParent<TowingSet>().GetTowedBy().transform)
                         {
                             __instance.MoorTo(mooring);
                             ___boatRigidbody.GetComponentInParent<TowingSet>().UpdateTowedBy();
