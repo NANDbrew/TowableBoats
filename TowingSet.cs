@@ -133,12 +133,13 @@ namespace TowableBoats
         }
         public bool PhysicsMode()
         {
-            // check if we're being towed
-            if (towed)
+            //check if we're being towed
+            if (towed && Plugin.performanceMode.Value > 0)
             {
                 TowingSet towedByLocal = towedBy;
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < Plugin.performanceMode.Value; i++) //settings limit. maybe we don't want everything behind us getting physics
                 {
+                    //check if what's towing us is the active boat
                     if (towedByLocal.transform == GameState.currentBoat || towedByLocal.transform == GameState.lastBoat)
                     {
                         //Plugin.logSource.LogInfo("found Boat");
@@ -152,15 +153,15 @@ namespace TowableBoats
                 }
             }
             // check if we're towing something
-            if (towing && Plugin.performanceMode.Value > 0)
+            if (towing)
             {
-                //Plugin.logSource.LogInfo("found bollard");
                 List<TowingSet> towedBoatsLocal = towedBoats;
-                for (int i = 0; i < Plugin.performanceMode.Value; i++)
+                for (int i = 0; i < 10; i++) // sanity limit. we want to know if the player is on the boat behind us
                 {
                     bool flag = false;
                     foreach (TowingSet towedBoat in towedBoatsLocal)
                     {
+                        //check if what we're towing is the active boat
                         if (towedBoat.transform == GameState.currentBoat || towedBoat.transform == GameState.lastBoat)
                         {
                             return true;

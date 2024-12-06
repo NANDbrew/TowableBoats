@@ -42,7 +42,6 @@
     <None Include="manifest.json" />
     <None Include="packages.config" />
     <None Include="README.md" />
-    <None Include="towing_sets.json" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
@@ -94,7 +93,6 @@
   <ItemGroup>
     <Compile Include="AssetTools.cs" />
     <Compile Include="BoatPerformancePatches.cs" />
-    <Compile Include="BollardDefs.cs" />
     <Compile Include="ConfigurationManagerAttributes.cs" />
     <Compile Include="MooringPatches.cs" />
     <Compile Include="Plugin.cs" />

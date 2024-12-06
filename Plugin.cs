@@ -12,7 +12,7 @@ namespace TowableBoats
     {
         public const string PLUGIN_ID = "com.nandbrew.towableboats";
         public const string PLUGIN_NAME = "Towable Boats";
-        public const string PLUGIN_VERSION = "0.2.1";
+        public const string PLUGIN_VERSION = "0.2.2";
 
         //--settings--
         internal static ConfigEntry<int> performanceMode;
