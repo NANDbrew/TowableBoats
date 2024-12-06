@@ -26,6 +26,20 @@ namespace TowableBoats
         [HarmonyPatch(typeof(PickupableBoatMooringRope))]
         private static class BoatMooringRopePatches
         {
+            [HarmonyPatch("MoorTo")]
+            [HarmonyPostfix]
+            public static void MoorToPatch(PickupableBoatMooringRope __instance, GPButtonDockMooring mooring, Rigidbody ___boatRigidbody)
+            {
+                if (mooring.gameObject.CompareTag("Boat"))
+                {
+                    TowingSet towingSet = ___boatRigidbody.GetComponent<TowingSet>();
+                    if (mooring.GetComponentInParent<TowingSet>() is TowingSet parent && (!towingSet.towed || parent == towingSet.GetTowedBy()))
+                    {
+                        towingSet.UpdateTowedBy();
+                        parent.UpdateTowedBoats();
+                    }
+                }
+            }
             [HarmonyPatch("ThrowRopeTo")]
             [HarmonyPrefix]
             public static bool ThrowRopeToPatch(PickupableBoatMooringRope __instance, GPButtonDockMooring mooring, Rigidbody ___boatRigidbody)
@@ -34,12 +48,7 @@ namespace TowableBoats
                 {
                     if (___boatRigidbody.transform != mooring.GetComponentInParent<TowingSet>().transform)
                     {
-                        if (!__instance.GetComponentInParent<TowingSet>().towed || mooring.gameObject.GetComponentInParent<TowingSet>().transform == ___boatRigidbody.gameObject.GetComponentInParent<TowingSet>().GetTowedBy().transform)
-                        {
-                            __instance.MoorTo(mooring);
-                            ___boatRigidbody.GetComponentInParent<TowingSet>().UpdateTowedBy();
-                            mooring.GetComponentInParent<TowingSet>().UpdateTowedBoats();
-                        }
+                        __instance.MoorTo(mooring);
                     }
                     return false;
                 }
@@ -52,9 +61,10 @@ namespace TowableBoats
             {
                 if (___mooredToSpring != null)
                 {
-                    if (___mooredToSpring.GetComponentInParent<TowingSet>())
+                    if (___mooredToSpring.GetComponentInParent<TowingSet>() is TowingSet parent)
                     {
-                        __state = ___mooredToSpring.GetComponentInParent<TowingSet>();
+                        __state = parent;
+                        //Debug.Log("found " + __state);
                     }
                 }
             }
@@ -78,18 +88,16 @@ namespace TowableBoats
             [HarmonyPostfix]
             public static void UnmoorAllRopesPatch(BoatMooringRopes __instance)
             {
-                if (!__instance.GetComponentInParent<TowingSet>() || __instance.GetComponentInParent<TowingSet>().GetCleats() == null) return;
-
-                foreach (GPButtonDockMooring cleat in __instance.GetComponentInParent<TowingSet>().GetCleats())
-
+                if (__instance.GetComponentInParent<TowingSet>() is TowingSet parentSet && parentSet.GetCleats() != null)
                 {
-                    if (cleat.GetComponentInChildren<PickupableBoatMooringRope>())
+                    foreach (GPButtonDockMooring cleat in parentSet.GetCleats())
                     {
-                        PickupableBoatMooringRope rope = cleat.GetComponentInChildren<PickupableBoatMooringRope>();
-                        Debug.Log("found a thing");
-                        rope.Unmoor();
-                        rope.ResetRopePos();
-
+                        if (cleat.GetComponentInChildren<PickupableBoatMooringRope>() is PickupableBoatMooringRope rope)
+                        {
+                            //Debug.Log("found a thing");
+                            rope.Unmoor();
+                            rope.ResetRopePos();
+                        }
                     }
                 }
             }

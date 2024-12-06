@@ -16,19 +16,20 @@ namespace TowableBoats
     {
         //private Transform mooringSetTransform;
         //private Transform boatTransform;
-        private Rigidbody towedBy;
-        private List<Rigidbody> towedBoats;
+        private TowingSet towedBy;
+        private List<TowingSet> towedBoats;
         public bool towing;
         public bool towed;
         private GPButtonDockMooring[] cleats;
         public bool smallBoat;
+        private BoatMooringRopes mooringRopes;
 
         //public BoatPart boatPart;
         //public BoatPartOption partOption;
 
         //public Transform GetBoatTransform() { return boatTransform; }
-        public List<Rigidbody> GetTowedBoats() { return towedBoats; }
-        public Rigidbody GetTowedBy() { return towedBy; }
+        public List<TowingSet> GetTowedBoats() { return towedBoats; }
+        public TowingSet GetTowedBy() { return towedBy; }
         public GPButtonDockMooring[] GetCleats() { return cleats; }
 
         private void Awake()
@@ -36,8 +37,11 @@ namespace TowableBoats
             //mooringSetTransform = gameObject.GetComponentInChildren<MooringSet>().transform.GetChild(0);
             //Debug.Log("base parent is: " + base.transform.name);
             //boatTransform = base.transform;
+            mooringRopes = GetComponent<BoatMooringRopes>();
             if (transform.Find("towing set") is Transform set)
             {
+                if (set.GetComponent<BoatPartOption>() == null) set.gameObject.SetActive(true);
+                
                 cleats = set.GetComponentsInChildren<GPButtonDockMooring>();
             }
             else
@@ -86,7 +90,7 @@ namespace TowableBoats
 
         public void UpdateTowedBoats()
         {
-            towedBoats = new List<Rigidbody>();
+            towedBoats = new List<TowingSet>();
             bool flag = false;
 
             if (cleats != null)
@@ -95,7 +99,7 @@ namespace TowableBoats
                 {
                     if (cleats[i].transform.GetComponentInChildren<PickupableBoatMooringRope>() != null)
                     {
-                        towedBoats.Add(cleats[i].transform.GetComponentInChildren<PickupableBoatMooringRope>().GetBoatRigidbody());
+                        towedBoats.Add(cleats[i].transform.GetComponentInChildren<PickupableBoatMooringRope>().GetBoatRigidbody().GetComponent<TowingSet>());
                         flag = true;
                     }
                 }
@@ -110,22 +114,67 @@ namespace TowableBoats
             bool flag = false;
 
             towedBy = null;
-            PickupableBoatMooringRope[] ropes = gameObject.GetComponent<BoatMooringRopes>().ropes;
 
-            for (int i = 0; i < ropes.Length; i++)
+            foreach (PickupableBoatMooringRope rope in mooringRopes.ropes)
             {
-                if (ropes[i].IsMoored())
+                if (rope.IsMoored())
                 {
-                    if (Traverse.Create(ropes[i].GetType()).Field("mooredToSpring").GetValue<SpringJoint>() is SpringJoint spr && spr.gameObject.CompareTag("Boat"))
+                    //Debug.Log("rope is moored");
+                    if (Traverse.Create(rope).Field("mooredToSpring").GetValue() is SpringJoint spr && spr.gameObject.CompareTag("Boat"))
                     {
-                        towedBy = spr.transform.GetComponentInParent<TowingSet>().gameObject.GetComponent<Rigidbody>();
-
+                        towedBy = spr.GetComponentInParent<TowingSet>();
+                        //Debug.Log("rope is moored to " + spr.name);
                         flag = true;
                     }
                 }
             }
             towed = flag;
 
+        }
+        public bool PhysicsMode()
+        {
+            // check if we're being towed
+            if (towed)
+            {
+                TowingSet towedByLocal = towedBy;
+                for (int i = 0; i < 10; i++)
+                {
+                    if (towedByLocal.transform == GameState.currentBoat || towedByLocal.transform == GameState.lastBoat)
+                    {
+                        //Plugin.logSource.LogInfo("found Boat");
+                        return true;
+                    }
+                    if (towedByLocal.towed)
+                    {
+                        towedByLocal = towedByLocal.GetTowedBy();
+                    }
+                    else break;
+                }
+            }
+            // check if we're towing something
+            if (towing && Plugin.performanceMode.Value > 0)
+            {
+                //Plugin.logSource.LogInfo("found bollard");
+                List<TowingSet> towedBoatsLocal = towedBoats;
+                for (int i = 0; i < Plugin.performanceMode.Value; i++)
+                {
+                    bool flag = false;
+                    foreach (TowingSet towedBoat in towedBoatsLocal)
+                    {
+                        if (towedBoat.transform == GameState.currentBoat || towedBoat.transform == GameState.lastBoat)
+                        {
+                            return true;
+                        }
+                        if (towedBoat.towing)
+                        {
+                            towedBoatsLocal = towedBoat.GetTowedBoats();
+                            flag = true;
+                        }
+                    }
+                    if (!flag) break;
+                }
+            }
+            return false;
         }
 
         public void AddCleats()
