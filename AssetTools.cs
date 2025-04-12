@@ -17,8 +17,8 @@ namespace TowableBoats
         const string assetFile = "towable_boats.assets";
         public static void LoadAssetBundles()    //Load the bundle
         {
-            string firstTry = Path.Combine(Paths.PluginPath, assetDir, assetFile);
-            string secondTry = Path.Combine(Paths.PluginPath, assetFile);
+            string firstTry = Path.Combine(Plugin.dataPath, assetDir, assetFile);
+            string secondTry = Path.Combine(Plugin.dataPath, assetFile);
             //else { Debug.LogError("TowableBoats: can't find asset file"); return; }
 
             bundle = AssetBundle.LoadFromFile(File.Exists(firstTry) ? firstTry : secondTry);
