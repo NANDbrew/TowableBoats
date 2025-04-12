@@ -131,13 +131,13 @@ namespace TowableBoats
             towed = flag;
 
         }
-        public bool PhysicsMode()
+        public bool PhysicsMode(int depth)
         {
             //check if we're being towed
-            if (towed && Plugin.performanceMode.Value > 0)
+            if (towed && depth > 0)
             {
                 TowingSet towedByLocal = towedBy;
-                for (int i = 0; i < Plugin.performanceMode.Value; i++) //settings limit. maybe we don't want everything behind us getting physics
+                for (int i = 0; i < depth; i++) // limit. maybe we don't want everything getting physics
                 {
                     //check if what's towing us is the active boat
                     if (towedByLocal.transform == GameState.currentBoat || towedByLocal.transform == GameState.lastBoat)

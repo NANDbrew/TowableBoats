@@ -1,4 +1,4 @@
-**Tow boats by mooring them to new towing cleats.**
+**Tow boats by mooring them to towing cleats on other boats.**
 
 Adds six towing cleats to each big boat.
 Optionally adds two towing cleats to each small boat.

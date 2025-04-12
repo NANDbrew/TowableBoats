@@ -23,7 +23,7 @@ namespace TowableBoats
                 if (!___rigidbody.isKinematic || !GameState.sleeping) return;
                 if (__instance.GetComponentInParent<TowingSet>() is TowingSet towingSet)
                 {
-                   ___rigidbody.isKinematic = !towingSet.PhysicsMode();
+                   ___rigidbody.isKinematic = !towingSet.PhysicsMode(10);
                 }
                 
             }
@@ -41,7 +41,7 @@ namespace TowableBoats
                 }
                 if (__instance.GetComponentInParent<TowingSet>() is TowingSet towingSet)
                 {
-                    Util.InvokePrivate(__instance, "SetPerformanceMode", !towingSet.PhysicsMode());
+                    Util.InvokePrivate(__instance, "SetPerformanceMode", !towingSet.PhysicsMode(Plugin.performanceMode.Value));
                     return false;
                 }
                 return true;
