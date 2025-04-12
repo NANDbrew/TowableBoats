@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HarmonyLib;
 using UnityEngine;
 using System.Collections;
+using BepInEx.Bootstrap;
 
 namespace TowableBoats
 {
@@ -32,6 +33,10 @@ namespace TowableBoats
             {
                 if (mooring.gameObject.CompareTag("Boat"))
                 {
+                    if (!Chainloader.PluginInfos.ContainsKey("com.nandbrew.nandfixes"))
+                    {
+                        Hints.instance.ShowExternalHint("NANDFixes not present. Not responsible for lost items or sunk ships");
+                    }
                     TowingSet towingSet = ___boatRigidbody.GetComponent<TowingSet>();
                     if (mooring.GetComponentInParent<TowingSet>() is TowingSet parent && (!towingSet.towed || parent == towingSet.GetTowedBy()))
                     {
