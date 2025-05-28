@@ -40,6 +40,8 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="manifest.json" />
+    <None Include="modder resources\readme.md" />
+    <None Include="modder resources\towing set.unitypackage" />
     <None Include="packages.config" />
     <None Include="README.md" />
   </ItemGroup>

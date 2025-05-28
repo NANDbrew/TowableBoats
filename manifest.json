@@ -1,6 +1,6 @@
 ﻿{
     "name": "TowableBoats",
-    "version_number": "0.2.2",
+    "version_number": "0.2.3",
     "website_url": "https://github.com/NANDbrew/TowableBoats",
     "description": "Tow boats by mooring them to towing cleats on other boats.",
     "dependencies": [
