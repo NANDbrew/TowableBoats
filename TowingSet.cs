@@ -1,21 +1,12 @@
 ﻿using HarmonyLib;
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using cakeslice;
-using BepInEx;
-using System.Reflection;
+
 
 namespace TowableBoats
 {
     internal class TowingSet : MonoBehaviour
     {
-        //private Transform mooringSetTransform;
-        //private Transform boatTransform;
         private TowingSet towedBy;
         private List<TowingSet> towedBoats;
         public bool towing;
@@ -24,19 +15,16 @@ namespace TowableBoats
         public bool smallBoat;
         private BoatMooringRopes mooringRopes;
 
-        //public BoatPart boatPart;
-        //public BoatPartOption partOption;
+        public bool horizon;
+        public bool physicsMode;
 
-        //public Transform GetBoatTransform() { return boatTransform; }
+        public bool PhysicsMode() { return physicsMode; }
         public List<TowingSet> GetTowedBoats() { return towedBoats; }
         public TowingSet GetTowedBy() { return towedBy; }
         public GPButtonDockMooring[] GetCleats() { return cleats; }
 
         private void Awake()
         {
-            //mooringSetTransform = gameObject.GetComponentInChildren<MooringSet>().transform.GetChild(0);
-            //Debug.Log("base parent is: " + base.transform.name);
-            //boatTransform = base.transform;
             mooringRopes = GetComponent<BoatMooringRopes>();
             if (transform.Find("towing set") is Transform set)
             {
@@ -50,7 +38,7 @@ namespace TowableBoats
             }
         }
 
-        private void FixedUpdate()
+        private void Update()
         {
 
             if (GameState.justStarted)
@@ -131,10 +119,13 @@ namespace TowableBoats
             towed = flag;
 
         }
-        public bool PhysicsMode(int depth)
+        public bool UpdatePhysicsMode()
         {
+            int depth = 10;
+            physicsMode = false;
+            horizon = false;
             //check if we're being towed
-            if (towed && depth > 0)
+            if (towed)
             {
                 TowingSet towedByLocal = towedBy;
                 for (int i = 0; i < depth; i++) // limit. maybe we don't want everything getting physics
@@ -143,6 +134,9 @@ namespace TowableBoats
                     if (towedByLocal.transform == GameState.currentBoat || towedByLocal.transform == GameState.lastBoat)
                     {
                         //Plugin.logSource.LogInfo("found Boat");
+                        physicsMode = i <= Plugin.performanceMode.Value;
+                        //if (i <= Plugin.performanceMode.Value) physicsMode = true;
+                        horizon = true;
                         return true;
                     }
                     if (towedByLocal.towed)
@@ -156,7 +150,7 @@ namespace TowableBoats
             if (towing)
             {
                 List<TowingSet> towedBoatsLocal = towedBoats;
-                for (int i = 0; i < 10; i++) // sanity limit. we want to know if the player is on the boat behind us
+                for (int i = 0; i < depth; i++) // sanity limit. we want to know if the player is on the boat behind us
                 {
                     bool flag = false;
                     foreach (TowingSet towedBoat in towedBoatsLocal)
@@ -164,6 +158,8 @@ namespace TowableBoats
                         //check if what we're towing is the active boat
                         if (towedBoat.transform == GameState.currentBoat || towedBoat.transform == GameState.lastBoat)
                         {
+                            physicsMode = true;
+                            horizon = true;
                             return true;
                         }
                         if (towedBoat.towing)
@@ -193,7 +189,7 @@ namespace TowableBoats
                 else if (index == 10) { prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set dhow.prefab"); smallBoat = true; }
                 else if (index == 90) { prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set kakam.prefab"); smallBoat = true; }
                 else return;
-                var towingSet = UnityEngine.Object.Instantiate(prefab, transform, false);
+                var towingSet = Instantiate(prefab, transform, false);
                 towingSet.name = "towing set";
                 cleats = towingSet.GetComponentsInChildren<GPButtonDockMooring>();
             }

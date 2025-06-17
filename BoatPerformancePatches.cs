@@ -1,11 +1,4 @@
 using HarmonyLib;
-
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace TowableBoats
@@ -23,7 +16,7 @@ namespace TowableBoats
                 if (!___rigidbody.isKinematic || !GameState.sleeping) return;
                 if (__instance.GetComponentInParent<TowingSet>() is TowingSet towingSet)
                 {
-                   ___rigidbody.isKinematic = !towingSet.PhysicsMode(10);
+                   ___rigidbody.isKinematic = !towingSet.UpdatePhysicsMode();
                 }
                 
             }
@@ -41,7 +34,7 @@ namespace TowableBoats
                 }
                 if (__instance.GetComponentInParent<TowingSet>() is TowingSet towingSet)
                 {
-                    Util.InvokePrivate(__instance, "SetPerformanceMode", !towingSet.PhysicsMode(Plugin.performanceMode.Value));
+                    Util.InvokePrivate(__instance, "SetPerformanceMode", !towingSet.PhysicsMode());
                     return false;
                 }
                 return true;
