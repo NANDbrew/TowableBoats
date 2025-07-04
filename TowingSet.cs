@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace TowableBoats
 {
-    internal class TowingSet : MonoBehaviour
+    public class TowingSet : MonoBehaviour
     {
         public TowingSet towedBy;
         private List<TowingSet> towedBoats;
@@ -31,12 +31,14 @@ namespace TowableBoats
             {
                 AddCleats();
             }
-            BoatPerformancePatches.towingSets.Add(gameObject, this);
         }
 
         private void Update()
         {
-            UpdatePhysicsMode();
+            if (transform != GameState.lastBoat)
+            {
+                UpdatePhysicsMode();
+            }
         }
 
         public void UpdateTowedBoats()
@@ -110,7 +112,7 @@ namespace TowableBoats
                     foreach (TowingSet towedBoat in towedBoatsLocal)
                     {
                         //check if what we're towing is the active boat
-                        if (towedBoat.transform == GameState.currentBoat || towedBoat.transform == GameState.lastBoat)
+                        if (towedBoat.transform == GameState.lastBoat)
                         {
                             Physics = true;
                             Horizon = true;

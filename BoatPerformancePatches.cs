@@ -1,6 +1,7 @@
 using HarmonyLib;
 using System.Collections.Generic;
 using UnityEngine;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace TowableBoats
 {
@@ -17,28 +18,29 @@ namespace TowableBoats
                 if (__instance.NPCBoat || !___rigidbody.isKinematic || !GameState.sleeping) return;
                 if (__instance.transform.parent.GetComponent<TowingSet>()?.Horizon == true)
                 {
-                   ___rigidbody.isKinematic = false;
+                    ___rigidbody.isKinematic = false;
                 }
             }
         }
         [HarmonyPatch(typeof(BoatPerformanceSwitcher))]
         private static class BoatPerformanceSwitcherPatch
         {
-            [HarmonyPatch("SetPerformanceMode")]
+            [HarmonyPatch("Update")]
             [HarmonyPrefix]
-            public static void BoatPerformaceSwitcherPatch(ref bool newState, BoatPerformanceSwitcher __instance, Rigidbody ___body)
+            public static bool BoatPerformaceSwitcherPatch(BoatPerformanceSwitcher __instance, ref Rigidbody ___body, BoatDamage ___damage)
             {
-                if (newState && !___body.isKinematic)
+                if (GameState.lastBoat == __instance.transform || ___damage.sunk || ___body.isKinematic)
                 {
-                    if (__instance.GetComponent<TowingSet>()?.Physics == true)
-                    {
-                        newState = false;
-                    }
+                    return true;
                 }
+                if (__instance.GetComponent<TowingSet>()?.Physics == true)
+                {
+                    Util.InvokePrivate(__instance, "SetPerformanceMode", false);
+                    return false;
+                }
+                return true;
             }
-            
 
         }
-
     }
 }
