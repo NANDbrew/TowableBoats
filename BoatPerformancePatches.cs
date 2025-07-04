@@ -1,11 +1,12 @@
 using HarmonyLib;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace TowableBoats
 {
     internal class BoatPerformancePatches
     {
-
+        public static Dictionary<GameObject, TowingSet> towingSets = new Dictionary<GameObject, TowingSet>();
         [HarmonyPatch(typeof(BoatHorizon))]
         private static class BoatHorizonPatch
         {
@@ -13,31 +14,27 @@ namespace TowableBoats
             [HarmonyPostfix]
             public static void BoatKinematicPatch(BoatHorizon __instance, ref Rigidbody ___rigidbody)
             {
-                if (!___rigidbody.isKinematic || !GameState.sleeping) return;
-                if (__instance.GetComponentInParent<TowingSet>() is TowingSet towingSet)
+                if (__instance.NPCBoat || !___rigidbody.isKinematic || !GameState.sleeping) return;
+                if (__instance.transform.parent.GetComponent<TowingSet>()?.Horizon == true)
                 {
-                   ___rigidbody.isKinematic = !towingSet.UpdatePhysicsMode();
+                   ___rigidbody.isKinematic = false;
                 }
-                
             }
         }
         [HarmonyPatch(typeof(BoatPerformanceSwitcher))]
         private static class BoatPerformanceSwitcherPatch
         {
-            [HarmonyPatch("Update")]
+            [HarmonyPatch("SetPerformanceMode")]
             [HarmonyPrefix]
-            public static bool BoatPerformaceSwitcherPatch(BoatPerformanceSwitcher __instance, ref Rigidbody ___body, BoatDamage ___damage)
+            public static void BoatPerformaceSwitcherPatch(ref bool newState, BoatPerformanceSwitcher __instance, Rigidbody ___body)
             {
-                if (GameState.lastBoat == __instance.transform || ___damage.sunk)
+                if (newState && !___body.isKinematic)
                 {
-                    return true;
+                    if (__instance.GetComponent<TowingSet>()?.Physics == true)
+                    {
+                        newState = false;
+                    }
                 }
-                if (__instance.GetComponentInParent<TowingSet>() is TowingSet towingSet)
-                {
-                    Util.InvokePrivate(__instance, "SetPerformanceMode", !towingSet.PhysicsMode());
-                    return false;
-                }
-                return true;
             }
             
 

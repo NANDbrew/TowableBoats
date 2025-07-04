@@ -7,100 +7,58 @@ namespace TowableBoats
 {
     internal class TowingSet : MonoBehaviour
     {
-        private TowingSet towedBy;
+        public TowingSet towedBy;
         private List<TowingSet> towedBoats;
-        public bool towing;
-        public bool towed;
-        private GPButtonDockMooring[] cleats;
-        public bool smallBoat;
+
+        private TowingCleat[] cleats;
         private BoatMooringRopes mooringRopes;
 
-        public bool horizon;
-        public bool physicsMode;
+        public bool Horizon { get; private set; }
+        public bool Physics { get; private set; }
 
-        public bool PhysicsMode() { return physicsMode; }
         public List<TowingSet> GetTowedBoats() { return towedBoats; }
-        public TowingSet GetTowedBy() { return towedBy; }
-        public GPButtonDockMooring[] GetCleats() { return cleats; }
 
         private void Awake()
         {
+            towedBoats = new List<TowingSet>();
             mooringRopes = GetComponent<BoatMooringRopes>();
             if (transform.Find("towing set") is Transform set)
             {
                 if (set.GetComponent<BoatPartOption>() == null) set.gameObject.SetActive(true);
-                
-                cleats = set.GetComponentsInChildren<GPButtonDockMooring>();
+                RegisterCleats(set.GetComponentsInChildren<GPButtonDockMooring>());
             }
             else
             {
                 AddCleats();
             }
+            BoatPerformancePatches.towingSets.Add(gameObject, this);
         }
 
         private void Update()
         {
-
-            if (GameState.justStarted)
-            {
-                UpdateTowedBoats();
-                UpdateTowedBy();
-            }
-            if (cleats == null) return;
-            if (Plugin.drag.Value == true)
-            {
-                for (int i = 0; i < cleats.Length; i++)
-                {
-                    if (cleats[i].transform.GetComponentInChildren<PickupableBoatMooringRope>())
-                    {
-                        Vector3 force = cleats[i].transform.GetComponentInChildren<SpringJoint>().currentForce;
-                        if (cleats[i].transform.GetComponentInChildren<SpringJoint>().connectedBody.gameObject.GetComponent<BoatPerformanceSwitcher>().performanceModeIsOn())
-                        {
-                            force /= 10;
-                        }
-                        gameObject.GetComponent<Rigidbody>().AddForceAtPosition(force / 3f, cleats[i].transform.position, ForceMode.Force);
-                    }
-                }
-            }
-            if (smallBoat)
-            {
-                foreach (var cleat in cleats)
-                {
-                    if (!Plugin.smallBoats.Value && cleat.GetComponentInChildren<PickupableBoatMooringRope>() is PickupableBoatMooringRope rope)
-                    {
-                        rope.Unmoor();
-                        rope.ResetRopePos();
-                    }
-                    cleat.gameObject.SetActive(Plugin.smallBoats.Value);
-                }
-            }
+            UpdatePhysicsMode();
         }
 
         public void UpdateTowedBoats()
         {
             towedBoats = new List<TowingSet>();
-            bool flag = false;
 
             if (cleats != null)
             {
                 for (int i = 0; i < cleats.Length; i++)
                 {
-                    if (cleats[i].transform.GetComponentInChildren<PickupableBoatMooringRope>() != null)
+                    if (cleats[i].towed is TowingSet towed && !towedBoats.Contains(towed))
                     {
-                        towedBoats.Add(cleats[i].transform.GetComponentInChildren<PickupableBoatMooringRope>().GetBoatRigidbody().GetComponent<TowingSet>());
-                        flag = true;
+                        towedBoats.Add(towed);
                     }
                 }
 
             }
-            towing = flag;
 
         }
 
         public void UpdateTowedBy()
         {
-            bool flag = false;
-
             towedBy = null;
 
             foreach (PickupableBoatMooringRope rope in mooringRopes.ropes)
@@ -108,70 +66,65 @@ namespace TowableBoats
                 if (rope.IsMoored())
                 {
                     //Debug.Log("rope is moored");
-                    if (Traverse.Create(rope).Field("mooredToSpring").GetValue() is SpringJoint spr && spr.gameObject.CompareTag("Boat"))
+                    if (rope.transform.parent.GetComponent<TowingCleat>() is TowingCleat cleat)
                     {
-                        towedBy = spr.GetComponentInParent<TowingSet>();
-                        //Debug.Log("rope is moored to " + spr.name);
-                        flag = true;
+                        towedBy = cleat.towingSet;
+                        return;
                     }
+
                 }
             }
-            towed = flag;
-
         }
-        public bool UpdatePhysicsMode()
+        public void UpdatePhysicsMode()
         {
             int depth = 10;
-            physicsMode = false;
-            horizon = false;
+            Physics = false;
+            Horizon = false;
             //check if we're being towed
-            if (towed)
+            if (towedBy)
             {
                 TowingSet towedByLocal = towedBy;
                 for (int i = 0; i < depth; i++) // limit. maybe we don't want everything getting physics
                 {
                     //check if what's towing us is the active boat
-                    if (towedByLocal.transform == GameState.currentBoat || towedByLocal.transform == GameState.lastBoat)
+                    if (towedByLocal.transform == GameState.lastBoat)
                     {
-                        //Plugin.logSource.LogInfo("found Boat");
-                        physicsMode = i <= Plugin.performanceMode.Value;
-                        //if (i <= Plugin.performanceMode.Value) physicsMode = true;
-                        horizon = true;
-                        return true;
+                        Physics = i < Plugin.performanceMode.Value;
+                        Horizon = true;
+                        return;
                     }
-                    if (towedByLocal.towed)
+                    if (towedByLocal.towedBy)
                     {
-                        towedByLocal = towedByLocal.GetTowedBy();
+                        towedByLocal = towedByLocal.towedBy;
                     }
                     else break;
                 }
             }
             // check if we're towing something
-            if (towing)
+            if (towedBoats.Count > 0)
             {
                 List<TowingSet> towedBoatsLocal = towedBoats;
                 for (int i = 0; i < depth; i++) // sanity limit. we want to know if the player is on the boat behind us
                 {
-                    bool flag = false;
+                    bool towedLocal = false;
                     foreach (TowingSet towedBoat in towedBoatsLocal)
                     {
                         //check if what we're towing is the active boat
                         if (towedBoat.transform == GameState.currentBoat || towedBoat.transform == GameState.lastBoat)
                         {
-                            physicsMode = true;
-                            horizon = true;
-                            return true;
+                            Physics = true;
+                            Horizon = true;
+                            return;
                         }
-                        if (towedBoat.towing)
+                        if (towedBoat.towedBoats.Count > 0)
                         {
                             towedBoatsLocal = towedBoat.GetTowedBoats();
-                            flag = true;
+                            towedLocal = true;
                         }
                     }
-                    if (!flag) break;
+                    if (!towedLocal) break;
                 }
             }
-            return false;
         }
 
         public void AddCleats()
@@ -185,13 +138,14 @@ namespace TowableBoats
                 else if (index == 20) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set sanbuq.prefab");
                 else if (index == 80) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set junk.prefab");
                 else if (index == 70) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set jong.prefab");
-                else if (index == 40) { prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set cog.prefab"); smallBoat = true; }
-                else if (index == 10) { prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set dhow.prefab"); smallBoat = true; }
-                else if (index == 90) { prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set kakam.prefab"); smallBoat = true; }
+                else if (index == 40 && Plugin.smallBoats.Value) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set cog.prefab");
+                else if (index == 10 && Plugin.smallBoats.Value) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set dhow.prefab");
+                else if (index == 90 && Plugin.smallBoats.Value) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set kakam.prefab");
                 else return;
                 var towingSet = Instantiate(prefab, transform, false);
                 towingSet.name = "towing set";
-                cleats = towingSet.GetComponentsInChildren<GPButtonDockMooring>();
+                RegisterCleats(towingSet.GetComponentsInChildren<GPButtonDockMooring>());
+
             }
             catch 
             { 
@@ -200,6 +154,29 @@ namespace TowableBoats
 
         }
 
+        private void RegisterCleats(GPButtonDockMooring[] cleatArray)
+        {
+            cleats = new TowingCleat[cleatArray.Length];
+            for (int i = 0; i < cleats.Length; i++)
+            {
+                cleats[i] = cleatArray[i].gameObject.AddComponent<TowingCleat>();
+                cleats[i].towingSet = this;
+                Component.Destroy(cleatArray[i]);
+            }
+        }
+
+        public void UnmoorAllRopes()
+        {
+            foreach (TowingCleat cleat in cleats)
+            {
+                if (cleat.transform.childCount > 0 && cleat.transform.GetChild(0).GetComponent<PickupableBoatMooringRope>() is PickupableBoatMooringRope rope)
+                {
+                    //Debug.Log("found a thing");
+                    rope.Unmoor();
+                    rope.ResetRopePos();
+                }
+            }
+        }
 
     }
 }

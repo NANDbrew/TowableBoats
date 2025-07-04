@@ -29,60 +29,33 @@ namespace TowableBoats
         {
             [HarmonyPatch("MoorTo")]
             [HarmonyPostfix]
-            public static void MoorToPatch(PickupableBoatMooringRope __instance, GPButtonDockMooring mooring, Rigidbody ___boatRigidbody)
+            public static void MoorToPatch(GPButtonDockMooring mooring, Rigidbody ___boatRigidbody)
             {
-                if (mooring.gameObject.CompareTag("Boat"))
+                if (mooring is TowingCleat cleat && cleat.towingSet.gameObject != ___boatRigidbody.gameObject)
                 {
-                    if (!Chainloader.PluginInfos.ContainsKey("com.nandbrew.nandfixes"))
-                    {
-                        Hints.instance.ShowExternalHint("NANDFixes not present. Not responsible for lost items or sunk ships");
-                    }
-                    TowingSet towingSet = ___boatRigidbody.GetComponent<TowingSet>();
-                    if (mooring.GetComponentInParent<TowingSet>() is TowingSet parent && (!towingSet.towed || parent == towingSet.GetTowedBy()))
-                    {
-                        towingSet.UpdateTowedBy();
-                        parent.UpdateTowedBoats();
-                    }
+                    cleat.RegisterTowed(___boatRigidbody.GetComponent<TowingSet>());
+
                 }
-            }
-            [HarmonyPatch("ThrowRopeTo")]
-            [HarmonyPrefix]
-            public static bool ThrowRopeToPatch(PickupableBoatMooringRope __instance, GPButtonDockMooring mooring, Rigidbody ___boatRigidbody)
-            {
-                if (mooring.gameObject.CompareTag("Boat"))
-                {
-                    if (___boatRigidbody.transform != mooring.GetComponentInParent<TowingSet>().transform)
-                    {
-                        __instance.MoorTo(mooring);
-                    }
-                    return false;
-                }
-                return true;
             }
 
             [HarmonyPatch("Unmoor")]
             [HarmonyPrefix]
-            public static void UnmoorPatch(SpringJoint ___mooredToSpring, ref TowingSet __state)
+            public static void UnmoorPatch(SpringJoint ___mooredToSpring, ref TowingCleat __state)
             {
-                if (___mooredToSpring != null)
+                if (___mooredToSpring != null && ___mooredToSpring.GetComponent<TowingCleat>() is TowingCleat cleat)
                 {
-                    if (___mooredToSpring.GetComponentInParent<TowingSet>() is TowingSet parent)
-                    {
-                        __state = parent;
-                        //Debug.Log("found " + __state);
-                    }
+                    __state = cleat;
+
                 }
             }
             [HarmonyPatch("Unmoor")]
             [HarmonyPostfix]
-            public static void UnmoorPostPatch(TowingSet __state, Rigidbody ___boatRigidbody)
+            public static void UnmoorPostPatch(TowingCleat __state)
             {
-
                 if (__state)
                 {
-                    __state.UpdateTowedBoats();
+                    __state.Unhook();
                 }
-                ___boatRigidbody.GetComponent<TowingSet>().UpdateTowedBy();
             }
         }
 
@@ -93,17 +66,9 @@ namespace TowableBoats
             [HarmonyPostfix]
             public static void UnmoorAllRopesPatch(BoatMooringRopes __instance)
             {
-                if (__instance.GetComponentInParent<TowingSet>() is TowingSet parentSet && parentSet.GetCleats() != null)
+                if (__instance.GetComponent<TowingSet>() is TowingSet towingSet)
                 {
-                    foreach (GPButtonDockMooring cleat in parentSet.GetCleats())
-                    {
-                        if (cleat.GetComponentInChildren<PickupableBoatMooringRope>() is PickupableBoatMooringRope rope)
-                        {
-                            //Debug.Log("found a thing");
-                            rope.Unmoor();
-                            rope.ResetRopePos();
-                        }
-                    }
+                    towingSet.UnmoorAllRopes();
                 }
             }
         }

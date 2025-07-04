@@ -99,6 +99,7 @@
     <Compile Include="MooringPatches.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="SleepPatches.cs" />
+    <Compile Include="TowingCleat.cs" />
     <Compile Include="TowingSet.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
