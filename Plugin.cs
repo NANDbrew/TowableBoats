@@ -30,7 +30,7 @@ namespace TowableBoats
             Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), PLUGIN_ID);
 
             performanceMode = Config.Bind("Settings", "Performance mode", 1, new ConfigDescription("How many boats in the chain behind the current boat get full physics", new AcceptableValueRange<int>(0, 10), new ConfigurationManagerAttributes { Order = 2 }));
-            smallBoats = Config.Bind("Settings", "Small boats can tow", true, new ConfigDescription("Add anchor points to small boats", null, new ConfigurationManagerAttributes { IsAdvanced = false, Order = 1}));
+            smallBoats = Config.Bind("Settings", "Small boats can tow", true, new ConfigDescription("Add anchor points to small boats (requires a restart)", null, new ConfigurationManagerAttributes { IsAdvanced = false, Order = 1}));
             ignoreWarning = Config.Bind("Settings", "Ignore NANDfixes warning", false, new ConfigDescription("", null, new ConfigurationManagerAttributes { IsAdvanced = true }));
             AssetTools.LoadAssetBundles();
 
