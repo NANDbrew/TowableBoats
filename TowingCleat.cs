@@ -31,9 +31,13 @@ namespace TowableBoats
             }
         }
 
-        public void Unhook(TowingSet towedBoat)
+        public void Unhook()
         {
-            towedBoat.UpdateTowedBy();
+            if (towed != null)
+            {
+                towed.UpdateTowedBy();
+                towed = null; 
+            }
             towingSet.UpdateTowedBoats();
         }
     }

@@ -24,7 +24,7 @@ namespace TowableBoats
             }
         }
         [HarmonyPatch(typeof(PickupableBoatMooringRope))]
-        private static class BoatMooringRopePatches
+        private static class MooringRopePatches
         {
             [HarmonyPatch("MoorTo")]
             [HarmonyPostfix]
@@ -37,9 +37,9 @@ namespace TowableBoats
             }
             [HarmonyPatch("Unmoor")]
             [HarmonyPrefix]
-            public static void UnmoorPatch(SpringJoint ___mooredToSpring, ref TowingCleat __state)
+            public static void UnmoorPrefix(SpringJoint ___mooredToSpring, ref TowingCleat __state)
             {
-                if (___mooredToSpring != null && ___mooredToSpring.GetComponent<TowingCleat>() is TowingCleat cleat)
+                if (___mooredToSpring?.GetComponent<TowingCleat>() is TowingCleat cleat)
                 {
                     __state = cleat;
 
@@ -47,11 +47,11 @@ namespace TowableBoats
             }
             [HarmonyPatch("Unmoor")]
             [HarmonyPostfix]
-            public static void UnmoorPostPatch(TowingCleat __state, Rigidbody ___boatRigidbody)
+            public static void UnmoorPostfix(TowingCleat __state)
             {
                 if (__state)
                 {
-                    __state.Unhook(___boatRigidbody.GetComponent<TowingSet>());
+                    __state.Unhook();
                 }
             }
         }
