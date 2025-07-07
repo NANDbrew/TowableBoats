@@ -18,9 +18,8 @@ namespace TowableBoats
 
         public List<TowingSet> GetTowedBoats() { return towedBoats; }
 
-        private void Awake()
+        public void Awake()
         {
-            towedBoats = new List<TowingSet>();
             mooringRopes = GetComponent<BoatMooringRopes>();
             if (transform.Find("towing set") is Transform set)
             {
@@ -33,7 +32,7 @@ namespace TowableBoats
             }
         }
 
-        private void Update()
+        public void Update()
         {
             if (transform != GameState.lastBoat)
             {
@@ -43,10 +42,9 @@ namespace TowableBoats
 
         public void UpdateTowedBoats()
         {
-            towedBoats = new List<TowingSet>();
-
             if (cleats != null)
             {
+                towedBoats = new List<TowingSet>();
                 for (int i = 0; i < cleats.Length; i++)
                 {
                     if (cleats[i].towed is TowingSet towed && !towedBoats.Contains(towed))
@@ -103,7 +101,7 @@ namespace TowableBoats
                 }
             }
             // check if we're towing something
-            if (towedBoats.Count > 0)
+            if (towedBoats != null && towedBoats.Count > 0)
             {
                 List<TowingSet> towedBoatsLocal = towedBoats;
                 for (int i = 0; i < depth; i++) // sanity limit. we want to know if the player is on the boat behind us
@@ -129,7 +127,7 @@ namespace TowableBoats
             }
         }
 
-        public void AddCleats()
+        private void AddCleats()
         {
             if (AssetTools.bundle == null) AssetTools.LoadAssetBundles();
             GameObject prefab;
@@ -165,17 +163,21 @@ namespace TowableBoats
                 cleats[i].towingSet = this;
                 Component.Destroy(cleatArray[i]);
             }
+            towedBoats = new List<TowingSet>();
         }
 
         public void UnmoorAllRopes()
         {
-            foreach (TowingCleat cleat in cleats)
+            if (cleats != null)
             {
-                if (cleat.transform.childCount > 0 && cleat.transform.GetChild(0).GetComponent<PickupableBoatMooringRope>() is PickupableBoatMooringRope rope)
+                foreach (TowingCleat cleat in cleats)
                 {
-                    //Debug.Log("found a thing");
-                    rope.Unmoor();
-                    rope.ResetRopePos();
+                    if (cleat.transform.childCount > 0 && cleat.transform.GetChild(0).GetComponent<PickupableBoatMooringRope>() is PickupableBoatMooringRope rope)
+                    {
+                        //Debug.Log("found a thing");
+                        rope.Unmoor();
+                        rope.ResetRopePos();
+                    }
                 }
             }
         }
