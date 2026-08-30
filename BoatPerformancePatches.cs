@@ -15,8 +15,8 @@ namespace TowableBoats
             [HarmonyPostfix]
             public static void BoatKinematicPatch(BoatHorizon __instance, ref Rigidbody ___rigidbody)
             {
-                if (__instance.NPCBoat || !___rigidbody.isKinematic || !GameState.sleeping) return;
-                if (__instance.transform.parent.GetComponent<TowingSet>()?.Horizon == true)
+                if (__instance.NPCBoat || !GameState.sleeping || ___rigidbody == null) return;
+                if (___rigidbody.isKinematic && __instance.transform.parent.GetComponent<TowingSet>()?.Horizon == true)
                 {
                     ___rigidbody.isKinematic = false;
                 }
@@ -25,7 +25,7 @@ namespace TowableBoats
         [HarmonyPatch(typeof(BoatPerformanceSwitcher))]
         private static class BoatPerformanceSwitcherPatch
         {
-            [HarmonyPatch("Update")]
+/*            [HarmonyPatch("Update")]
             [HarmonyPrefix]
             public static bool BoatPerformaceSwitcherPatch(BoatPerformanceSwitcher __instance, ref Rigidbody ___body, BoatDamage ___damage)
             {
@@ -39,8 +39,19 @@ namespace TowableBoats
                     return false;
                 }
                 return true;
-            }
+            }*/
 
+            [HarmonyPatch("SetPerformanceMode")]
+            [HarmonyPrefix]
+            public static void BoatPerformaceSwitcherPatch2(BoatPerformanceSwitcher __instance, ref bool newState)
+            {
+                if (GameState.currentlyLoading || GameState.justStarted) return;
+                if (__instance.GetComponent<TowingSet>()?.Physics == true)
+                {
+                    newState = false;
+                }
+
+            }
         }
     }
 }
