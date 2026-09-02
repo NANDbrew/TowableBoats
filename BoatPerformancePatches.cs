@@ -25,22 +25,6 @@ namespace TowableBoats
         [HarmonyPatch(typeof(BoatPerformanceSwitcher))]
         private static class BoatPerformanceSwitcherPatch
         {
-/*            [HarmonyPatch("Update")]
-            [HarmonyPrefix]
-            public static bool BoatPerformaceSwitcherPatch(BoatPerformanceSwitcher __instance, ref Rigidbody ___body, BoatDamage ___damage)
-            {
-                if (GameState.lastBoat == __instance.transform || ___damage.sunk || ___body.isKinematic)
-                {
-                    return true;
-                }
-                if (__instance.GetComponent<TowingSet>()?.Physics == true)
-                {
-                    Util.InvokePrivate(__instance, "SetPerformanceMode", false);
-                    return false;
-                }
-                return true;
-            }*/
-
             [HarmonyPatch("SetPerformanceMode")]
             [HarmonyPrefix]
             public static void BoatPerformaceSwitcherPatch2(BoatPerformanceSwitcher __instance, ref bool newState)
