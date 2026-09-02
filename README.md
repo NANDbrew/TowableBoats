@@ -1,6 +1,6 @@
 **Tow boats by mooring them to towing cleats on other boats.**
 
-Adds six towing cleats to each big boat.
+Adds six towing cleats to each medium or big boat.
 Optionally adds two towing cleats to each small boat.
 
 **Caveats**
@@ -13,8 +13,5 @@ Optionally adds two towing cleats to each small boat.
 **Settings:**
 - Performance mode: Set how many boats in the chain behind the current boat get full physics. (boat towed by boat towed by boat, etc.)
 - Small boats can tow: Add towing cleats to small boats.
-
-**Experimental settings:**
-- Drag: Allow boats to pull on the boat towing them (buggy)
 
 
