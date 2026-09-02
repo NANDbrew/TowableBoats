@@ -134,13 +134,14 @@ namespace TowableBoats
             int index = gameObject.GetComponent<SaveableObject>().sceneIndex;
             try
             {
-                if (index == 50) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set brig.prefab");
-                else if (index == 20) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set sanbuq.prefab");
-                else if (index == 80) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set junk.prefab");
-                else if (index == 70) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set jong.prefab");
-                else if (index == 40 && Plugin.smallBoats.Value) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set cog.prefab");
-                else if (index == 10 && Plugin.smallBoats.Value) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set dhow.prefab");
-                else if (index == 90 && Plugin.smallBoats.Value) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/towing set kakam.prefab");
+                if (index == 50) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/brig cleats.prefab");
+                else if (index == 20) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/sanbuq cleats.prefab");
+                else if (index == 30) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/bigbuq cleats.prefab");
+                else if (index == 80) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/junk cleats.prefab");
+                else if (index == 70) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/jong cleats.prefab");
+                else if (index == 40 && Plugin.smallBoats.Value) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/cog cleats.prefab");
+                else if (index == 10 && Plugin.smallBoats.Value) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/dhow cleats.prefab");
+                else if (index == 90 && Plugin.smallBoats.Value) prefab = AssetTools.bundle.LoadAsset<GameObject>("Assets/TowableBoats/kakam cleats.prefab");
                 else return;
                 var towingSet = Instantiate(prefab, transform, false);
                 towingSet.name = "towing set";
