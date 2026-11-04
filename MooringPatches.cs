@@ -28,11 +28,12 @@ namespace TowableBoats
         {
             [HarmonyPatch("MoorTo")]
             [HarmonyPostfix]
-            public static void MoorToPatch(GPButtonDockMooring mooring, Rigidbody ___boatRigidbody)
+            public static void MoorToPatch(PickupableBoatMooringRope __instance, GPButtonDockMooring mooring, Rigidbody ___boatRigidbody)
             {
                 if (mooring is TowingCleat cleat)
                 {
                     cleat.RegisterTowed(___boatRigidbody.GetComponent<TowingSet>());
+                    __instance.transform.SetParent(cleat.transform);
                 }
             }
             [HarmonyPatch("Unmoor")]
